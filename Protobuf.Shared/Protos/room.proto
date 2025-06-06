@@ -1,0 +1,45 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Protos";
+
+package room;
+
+service Room {
+	rpc CreateRoom (CreateRoomRequest) returns (RoomResponse);
+	rpc GetRoom (GetRoomRequest) returns (RoomResponse);
+	rpc UpdateRoom (UpdateRoomRequest) returns (RoomResponse);
+	rpc DeleteRoom (DeleteRoomRequest) returns (Empty);
+}
+
+message CreateRoomRequest {
+	string name = 1;
+	int32 maxParticipiants = 2;
+	string quality = 3;
+	string password = 4;
+}
+
+message GetRoomRequest {
+	string roomId = 1;
+}
+
+message UpdateRoomRequest {
+	string roomId = 1;
+	string name = 2;
+	int32 maxParticipiants = 3;
+	string quality = 4;
+	string password = 5;
+}
+
+message DeleteRoomRequest {
+	string roomId = 1;
+}
+
+message RoomResponse {
+	string roomId = 1;
+	string name = 2;
+	int32 maxParticipiants = 3;
+	string quality = 4;
+	string password = 5;
+}
+
+message Empty {}

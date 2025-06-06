@@ -1,0 +1,423 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\MeetingTime\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{DA6CAEFA-4FF1-4B07-9D61-E98FD740DAFF}|Shared.Infrastructure\\Shared.Infrastructure.csproj|d:\\meetingtime\\shared.infrastructure\\data\\meetingtimecontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DA6CAEFA-4FF1-4B07-9D61-E98FD740DAFF}|Shared.Infrastructure\\Shared.Infrastructure.csproj|solutionrelative:shared.infrastructure\\data\\meetingtimecontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{001FD57A-9F2A-4F8E-84C5-58E1E24540BD}|RoomService\\RoomService.csproj|d:\\meetingtime\\roomservice\\roomservice.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{001FD57A-9F2A-4F8E-84C5-58E1E24540BD}|RoomService\\RoomService.csproj|solutionrelative:roomservice\\roomservice.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DA6CAEFA-4FF1-4B07-9D61-E98FD740DAFF}|Shared.Infrastructure\\Shared.Infrastructure.csproj|d:\\meetingtime\\shared.infrastructure\\data\\designtimedbcontextfactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DA6CAEFA-4FF1-4B07-9D61-E98FD740DAFF}|Shared.Infrastructure\\Shared.Infrastructure.csproj|solutionrelative:shared.infrastructure\\data\\designtimedbcontextfactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{001FD57A-9F2A-4F8E-84C5-58E1E24540BD}|RoomService\\RoomService.csproj|d:\\meetingtime\\roomservice\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{001FD57A-9F2A-4F8E-84C5-58E1E24540BD}|RoomService\\RoomService.csproj|solutionrelative:roomservice\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6DFA0A8-339C-4E5B-A1F6-42EBDD604C97}|AuthService\\AuthService.csproj|d:\\meetingtime\\authservice\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{E6DFA0A8-339C-4E5B-A1F6-42EBDD604C97}|AuthService\\AuthService.csproj|solutionrelative:authservice\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E452CFF-4906-4EDF-86B6-8B4AAA04D750}|ApiGateway\\ApiGateway.csproj|d:\\meetingtime\\apigateway\\controllers\\roomcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E452CFF-4906-4EDF-86B6-8B4AAA04D750}|ApiGateway\\ApiGateway.csproj|solutionrelative:apigateway\\controllers\\roomcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{001FD57A-9F2A-4F8E-84C5-58E1E24540BD}|RoomService\\RoomService.csproj|d:\\meetingtime\\roomservice\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{001FD57A-9F2A-4F8E-84C5-58E1E24540BD}|RoomService\\RoomService.csproj|solutionrelative:roomservice\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6DFA0A8-339C-4E5B-A1F6-42EBDD604C97}|AuthService\\AuthService.csproj|d:\\meetingtime\\authservice\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E6DFA0A8-339C-4E5B-A1F6-42EBDD604C97}|AuthService\\AuthService.csproj|solutionrelative:authservice\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E452CFF-4906-4EDF-86B6-8B4AAA04D750}|ApiGateway\\ApiGateway.csproj|d:\\meetingtime\\apigateway\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E452CFF-4906-4EDF-86B6-8B4AAA04D750}|ApiGateway\\ApiGateway.csproj|solutionrelative:apigateway\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E452CFF-4906-4EDF-86B6-8B4AAA04D750}|ApiGateway\\ApiGateway.csproj|d:\\meetingtime\\apigateway\\apigateway.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{7E452CFF-4906-4EDF-86B6-8B4AAA04D750}|ApiGateway\\ApiGateway.csproj|solutionrelative:apigateway\\apigateway.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{001FD57A-9F2A-4F8E-84C5-58E1E24540BD}|RoomService\\RoomService.csproj|d:\\meetingtime\\roomservice\\services\\roomgrpcservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{001FD57A-9F2A-4F8E-84C5-58E1E24540BD}|RoomService\\RoomService.csproj|solutionrelative:roomservice\\services\\roomgrpcservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA747C5B-C4FB-497F-B58A-1BE1E31A3D6D}|Protobuf.Shared\\Protobuf.Shared.csproj|d:\\meetingtime\\protobuf.shared\\protos\\room.proto||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{FA747C5B-C4FB-497F-B58A-1BE1E31A3D6D}|Protobuf.Shared\\Protobuf.Shared.csproj|solutionrelative:protobuf.shared\\protos\\room.proto||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6566E85-FCEB-48B5-B89C-28C562B744C3}|Shared.Domain\\Shared.Domain.csproj|d:\\meetingtime\\shared.domain\\entities\\roomentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E6566E85-FCEB-48B5-B89C-28C562B744C3}|Shared.Domain\\Shared.Domain.csproj|solutionrelative:shared.domain\\entities\\roomentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{001FD57A-9F2A-4F8E-84C5-58E1E24540BD}|RoomService\\RoomService.csproj|d:\\meetingtime\\roomservice\\repositories\\roomrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{001FD57A-9F2A-4F8E-84C5-58E1E24540BD}|RoomService\\RoomService.csproj|solutionrelative:roomservice\\repositories\\roomrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DA6CAEFA-4FF1-4B07-9D61-E98FD740DAFF}|Shared.Infrastructure\\Shared.Infrastructure.csproj|d:\\meetingtime\\shared.infrastructure\\extensions\\infrastructureservicecollectionextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DA6CAEFA-4FF1-4B07-9D61-E98FD740DAFF}|Shared.Infrastructure\\Shared.Infrastructure.csproj|solutionrelative:shared.infrastructure\\extensions\\infrastructureservicecollectionextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6566E85-FCEB-48B5-B89C-28C562B744C3}|Shared.Domain\\Shared.Domain.csproj|d:\\meetingtime\\shared.domain\\shared.domain.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{E6566E85-FCEB-48B5-B89C-28C562B744C3}|Shared.Domain\\Shared.Domain.csproj|solutionrelative:shared.domain\\shared.domain.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DA6CAEFA-4FF1-4B07-9D61-E98FD740DAFF}|Shared.Infrastructure\\Shared.Infrastructure.csproj|d:\\meetingtime\\shared.infrastructure\\shared.infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{DA6CAEFA-4FF1-4B07-9D61-E98FD740DAFF}|Shared.Infrastructure\\Shared.Infrastructure.csproj|solutionrelative:shared.infrastructure\\shared.infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6566E85-FCEB-48B5-B89C-28C562B744C3}|Shared.Domain\\Shared.Domain.csproj|d:\\meetingtime\\shared.domain\\interfaces\\iroomrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E6566E85-FCEB-48B5-B89C-28C562B744C3}|Shared.Domain\\Shared.Domain.csproj|solutionrelative:shared.domain\\interfaces\\iroomrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6DFA0A8-339C-4E5B-A1F6-42EBDD604C97}|AuthService\\AuthService.csproj|d:\\meetingtime\\authservice\\data\\authdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E6DFA0A8-339C-4E5B-A1F6-42EBDD604C97}|AuthService\\AuthService.csproj|solutionrelative:authservice\\data\\authdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6DFA0A8-339C-4E5B-A1F6-42EBDD604C97}|AuthService\\AuthService.csproj|d:\\meetingtime\\authservice\\authservice.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{E6DFA0A8-339C-4E5B-A1F6-42EBDD604C97}|AuthService\\AuthService.csproj|solutionrelative:authservice\\authservice.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA747C5B-C4FB-497F-B58A-1BE1E31A3D6D}|Protobuf.Shared\\Protobuf.Shared.csproj|d:\\meetingtime\\protobuf.shared\\protobuf.shared.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{FA747C5B-C4FB-497F-B58A-1BE1E31A3D6D}|Protobuf.Shared\\Protobuf.Shared.csproj|solutionrelative:protobuf.shared\\protobuf.shared.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FA747C5B-C4FB-497F-B58A-1BE1E31A3D6D}|Protobuf.Shared\\Protobuf.Shared.csproj|d:\\meetingtime\\protobuf.shared\\protos\\auth.proto||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{FA747C5B-C4FB-497F-B58A-1BE1E31A3D6D}|Protobuf.Shared\\Protobuf.Shared.csproj|solutionrelative:protobuf.shared\\protos\\auth.proto||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E452CFF-4906-4EDF-86B6-8B4AAA04D750}|ApiGateway\\ApiGateway.csproj|d:\\meetingtime\\apigateway\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{7E452CFF-4906-4EDF-86B6-8B4AAA04D750}|ApiGateway\\ApiGateway.csproj|solutionrelative:apigateway\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 415,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{e1b7d1f8-9b3c-49b1-8f4f-bfc63a88835d}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "RoomService",
+              "DocumentMoniker": "D:\\MeetingTime\\RoomService\\RoomService.csproj",
+              "RelativeDocumentMoniker": "RoomService\\RoomService.csproj",
+              "ToolTip": "D:\\MeetingTime\\RoomService\\RoomService.csproj",
+              "RelativeToolTip": "RoomService\\RoomService.csproj",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABIAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-06-06T21:54:58.961Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MeetingTimeContext.cs",
+              "DocumentMoniker": "D:\\MeetingTime\\Shared.Infrastructure\\Data\\MeetingTimeContext.cs",
+              "RelativeDocumentMoniker": "Shared.Infrastructure\\Data\\MeetingTimeContext.cs",
+              "ToolTip": "D:\\MeetingTime\\Shared.Infrastructure\\Data\\MeetingTimeContext.cs",
+              "RelativeToolTip": "Shared.Infrastructure\\Data\\MeetingTimeContext.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAAfAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-06T22:36:09.972Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "DesignTimeDbContextFactory.cs",
+              "DocumentMoniker": "D:\\MeetingTime\\Shared.Infrastructure\\Data\\DesignTimeDbContextFactory.cs",
+              "RelativeDocumentMoniker": "Shared.Infrastructure\\Data\\DesignTimeDbContextFactory.cs",
+              "ToolTip": "D:\\MeetingTime\\Shared.Infrastructure\\Data\\DesignTimeDbContextFactory.cs",
+              "RelativeToolTip": "Shared.Infrastructure\\Data\\DesignTimeDbContextFactory.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAZAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-06T23:20:51.654Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\MeetingTime\\RoomService\\appsettings.json",
+              "RelativeDocumentMoniker": "RoomService\\appsettings.json",
+              "ToolTip": "D:\\MeetingTime\\RoomService\\appsettings.json",
+              "RelativeToolTip": "RoomService\\appsettings.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA4AAAARAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-06-06T22:05:12.676Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\MeetingTime\\AuthService\\appsettings.json",
+              "RelativeDocumentMoniker": "AuthService\\appsettings.json",
+              "ToolTip": "D:\\MeetingTime\\AuthService\\appsettings.json",
+              "RelativeToolTip": "AuthService\\appsettings.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAIAAAAnAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-06-06T21:41:17.08Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "RoomController.cs",
+              "DocumentMoniker": "D:\\MeetingTime\\ApiGateway\\Controllers\\RoomController.cs",
+              "RelativeDocumentMoniker": "ApiGateway\\Controllers\\RoomController.cs",
+              "ToolTip": "D:\\MeetingTime\\ApiGateway\\Controllers\\RoomController.cs",
+              "RelativeToolTip": "ApiGateway\\Controllers\\RoomController.cs",
+              "ViewState": "AQIAABEAAAAAAAAAAIA0wCkAAAAWAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-06T23:14:27.929Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\MeetingTime\\ApiGateway\\Program.cs",
+              "RelativeDocumentMoniker": "ApiGateway\\Program.cs",
+              "ToolTip": "D:\\MeetingTime\\ApiGateway\\Program.cs",
+              "RelativeToolTip": "ApiGateway\\Program.cs",
+              "ViewState": "AQIAABUAAAAAAAAAAAAAACYAAAAzAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-06T23:11:58.795Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "RoomGrpcService.cs",
+              "DocumentMoniker": "D:\\MeetingTime\\RoomService\\Services\\RoomGrpcService.cs",
+              "RelativeDocumentMoniker": "RoomService\\Services\\RoomGrpcService.cs",
+              "ToolTip": "D:\\MeetingTime\\RoomService\\Services\\RoomGrpcService.cs",
+              "RelativeToolTip": "RoomService\\Services\\RoomGrpcService.cs",
+              "ViewState": "AQIAAD0AAAAAAAAAAAAswFUAAAAJAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-06T22:53:48.348Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "ApiGateway",
+              "DocumentMoniker": "D:\\MeetingTime\\ApiGateway\\ApiGateway.csproj",
+              "RelativeDocumentMoniker": "ApiGateway\\ApiGateway.csproj",
+              "ToolTip": "D:\\MeetingTime\\ApiGateway\\ApiGateway.csproj",
+              "RelativeToolTip": "ApiGateway\\ApiGateway.csproj",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAB4AAAAyAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-06-06T21:54:51.824Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\MeetingTime\\AuthService\\Program.cs",
+              "RelativeDocumentMoniker": "AuthService\\Program.cs",
+              "ToolTip": "D:\\MeetingTime\\AuthService\\Program.cs",
+              "RelativeToolTip": "AuthService\\Program.cs",
+              "ViewState": "AQIAACcAAAAAAAAAAAAAAD8AAAAbAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-06T22:06:13.156Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\MeetingTime\\RoomService\\Program.cs",
+              "RelativeDocumentMoniker": "RoomService\\Program.cs",
+              "ToolTip": "D:\\MeetingTime\\RoomService\\Program.cs",
+              "RelativeToolTip": "RoomService\\Program.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABMAAAAmAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-06T22:05:09.264Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "room.proto",
+              "DocumentMoniker": "D:\\MeetingTime\\Protobuf.Shared\\Protos\\room.proto",
+              "RelativeDocumentMoniker": "Protobuf.Shared\\Protos\\room.proto",
+              "ToolTip": "D:\\MeetingTime\\Protobuf.Shared\\Protos\\room.proto",
+              "RelativeToolTip": "Protobuf.Shared\\Protos\\room.proto",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABMAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003853|",
+              "WhenOpened": "2025-06-06T23:11:02.474Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "RoomRepository.cs",
+              "DocumentMoniker": "D:\\MeetingTime\\RoomService\\Repositories\\RoomRepository.cs",
+              "RelativeDocumentMoniker": "RoomService\\Repositories\\RoomRepository.cs",
+              "ToolTip": "D:\\MeetingTime\\RoomService\\Repositories\\RoomRepository.cs",
+              "RelativeToolTip": "RoomService\\Repositories\\RoomRepository.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABYAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-06T22:52:02.026Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "RoomEntity.cs",
+              "DocumentMoniker": "D:\\MeetingTime\\Shared.Domain\\Entities\\RoomEntity.cs",
+              "RelativeDocumentMoniker": "Shared.Domain\\Entities\\RoomEntity.cs",
+              "ToolTip": "D:\\MeetingTime\\Shared.Domain\\Entities\\RoomEntity.cs",
+              "RelativeToolTip": "Shared.Domain\\Entities\\RoomEntity.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAAnAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-06T22:25:12.732Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "InfrastructureServiceCollectionExtensions.cs",
+              "DocumentMoniker": "D:\\MeetingTime\\Shared.Infrastructure\\Extensions\\InfrastructureServiceCollectionExtensions.cs",
+              "RelativeDocumentMoniker": "Shared.Infrastructure\\Extensions\\InfrastructureServiceCollectionExtensions.cs",
+              "ToolTip": "D:\\MeetingTime\\Shared.Infrastructure\\Extensions\\InfrastructureServiceCollectionExtensions.cs",
+              "RelativeToolTip": "Shared.Infrastructure\\Extensions\\InfrastructureServiceCollectionExtensions.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABMAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-06T22:40:10.805Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "Shared.Infrastructure",
+              "DocumentMoniker": "D:\\MeetingTime\\Shared.Infrastructure\\Shared.Infrastructure.csproj",
+              "RelativeDocumentMoniker": "Shared.Infrastructure\\Shared.Infrastructure.csproj",
+              "ToolTip": "D:\\MeetingTime\\Shared.Infrastructure\\Shared.Infrastructure.csproj",
+              "RelativeToolTip": "Shared.Infrastructure\\Shared.Infrastructure.csproj",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-06-06T22:37:46.235Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Shared.Domain",
+              "DocumentMoniker": "D:\\MeetingTime\\Shared.Domain\\Shared.Domain.csproj",
+              "RelativeDocumentMoniker": "Shared.Domain\\Shared.Domain.csproj",
+              "ToolTip": "D:\\MeetingTime\\Shared.Domain\\Shared.Domain.csproj",
+              "RelativeToolTip": "Shared.Domain\\Shared.Domain.csproj",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAMAAAAtAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-06-06T22:37:39.767Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "IRoomRepository.cs",
+              "DocumentMoniker": "D:\\MeetingTime\\Shared.Domain\\Interfaces\\IRoomRepository.cs",
+              "RelativeDocumentMoniker": "Shared.Domain\\Interfaces\\IRoomRepository.cs",
+              "ToolTip": "D:\\MeetingTime\\Shared.Domain\\Interfaces\\IRoomRepository.cs",
+              "RelativeToolTip": "Shared.Domain\\Interfaces\\IRoomRepository.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAiAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-06T22:26:54.492Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "AuthDbContext.cs",
+              "DocumentMoniker": "D:\\MeetingTime\\AuthService\\Data\\AuthDbContext.cs",
+              "RelativeDocumentMoniker": "AuthService\\Data\\AuthDbContext.cs",
+              "ToolTip": "D:\\MeetingTime\\AuthService\\Data\\AuthDbContext.cs",
+              "RelativeToolTip": "AuthService\\Data\\AuthDbContext.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAAEAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-06T22:18:11.822Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "AuthService",
+              "DocumentMoniker": "D:\\MeetingTime\\AuthService\\AuthService.csproj",
+              "RelativeDocumentMoniker": "AuthService\\AuthService.csproj",
+              "ToolTip": "D:\\MeetingTime\\AuthService\\AuthService.csproj",
+              "RelativeToolTip": "AuthService\\AuthService.csproj",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-06-06T22:05:17.855Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "Protobuf.Shared",
+              "DocumentMoniker": "D:\\MeetingTime\\Protobuf.Shared\\Protobuf.Shared.csproj",
+              "RelativeDocumentMoniker": "Protobuf.Shared\\Protobuf.Shared.csproj",
+              "ToolTip": "D:\\MeetingTime\\Protobuf.Shared\\Protobuf.Shared.csproj",
+              "RelativeToolTip": "Protobuf.Shared\\Protobuf.Shared.csproj",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABUAAAAKAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-06-06T21:53:00.56Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "auth.proto",
+              "DocumentMoniker": "D:\\MeetingTime\\Protobuf.Shared\\Protos\\auth.proto",
+              "RelativeDocumentMoniker": "Protobuf.Shared\\Protos\\auth.proto",
+              "ToolTip": "D:\\MeetingTime\\Protobuf.Shared\\Protos\\auth.proto",
+              "RelativeToolTip": "Protobuf.Shared\\Protos\\auth.proto",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABYAAAAWAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003853|",
+              "WhenOpened": "2025-06-06T21:46:54.024Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\MeetingTime\\ApiGateway\\appsettings.json",
+              "RelativeDocumentMoniker": "ApiGateway\\appsettings.json",
+              "ToolTip": "D:\\MeetingTime\\ApiGateway\\appsettings.json",
+              "RelativeToolTip": "ApiGateway\\appsettings.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-06-06T21:41:11.865Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

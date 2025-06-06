@@ -34,6 +34,10 @@ builder.Services.AddGrpcClient<Auth.AuthClient>(o =>
 {
     o.Address = new Uri("http://authservice:8080");
 });
+builder.Services.AddGrpcClient<Room.RoomClient>(o =>
+{
+    o.Address = new Uri("http://roomservice:8080");
+});
 
 builder.Services.AddControllers();
 

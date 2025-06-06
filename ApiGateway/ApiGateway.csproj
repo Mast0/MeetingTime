@@ -28,6 +28,7 @@
 
   <ItemGroup>
   	<Protobuf Include="..\Protobuf.Shared\Protos\auth.proto" GrpcServices="Both" />
+	<Protobuf Include="..\Protobuf.Shared\Protos\room.proto" GrpcServices="Both" />
   </ItemGroup>
 
 </Project>

@@ -16,6 +16,7 @@
 
 	<ItemGroup>
 		<Protobuf Include="Protos\auth.proto" GrpcServices="None" />
+		<Protobuf Include="Protos\room.proto" GrpcServices="None" />
 	</ItemGroup>
 
 </Project>
