@@ -1,5 +1,4 @@
-﻿using Grpc.Net.Client;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Protos;
 
 namespace ApiGateway.Controllers;

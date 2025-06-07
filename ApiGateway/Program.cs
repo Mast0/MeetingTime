@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Grpc.AspNetCore.Web;
 using Protos;
 using System.Text;
+using ApiGateway.Proxy;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +32,8 @@ builder.Services.AddAuthentication(opt =>
     };
 });
 
+builder.Services.AddGrpc();
+
 builder.Services.AddGrpcClient<Auth.AuthClient>(o =>
 {
     o.Address = new Uri("http://authservice:8080");
@@ -38,6 +42,12 @@ builder.Services.AddGrpcClient<Room.RoomClient>(o =>
 {
     o.Address = new Uri("http://roomservice:8080");
 });
+builder.Services.AddGrpcClient<Chat.ChatClient>(o =>
+{
+    o.Address = new Uri("http://chatservice:8080");
+});
+
+builder.Services.AddGrpc();
 
 builder.Services.AddControllers();
 
@@ -54,10 +64,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseRouting();
 
+app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+app.MapGrpcService<ProxyToChatService>().EnableGrpcWeb();
 app.MapControllers();
 
 await app.RunAsync();

@@ -1,6 +1,5 @@
 ﻿using Grpc.Core;
 using MeetingTime.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 using Protos;
 using Shared.Domain.Interfaces;
 

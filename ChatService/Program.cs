@@ -1,7 +1,7 @@
-using AuthService.Repositories;
+using ChatService.Repositories;
+using ChatService.Services;
 using MeetingTime.Domain.Data;
 using Microsoft.AspNetCore.Identity;
-using RoomService.Services;
 using Shared.Domain.Entities;
 using Shared.Domain.Interfaces;
 using Shared.Infrastructure.Extensions;
@@ -21,13 +21,13 @@ builder.Services.AddIdentity<UserEntity, IdentityRole>(opt =>
 .AddEntityFrameworkStores<MeetingTimeContext>()
 .AddDefaultTokenProviders();
 
-builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
 
 builder.Services.AddGrpc();
 
 var app = builder.Build();
 
-app.MapGrpcService<RoomGrpcService>();
+app.MapGrpcService<ChatGrpcService>();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
 app.Run();

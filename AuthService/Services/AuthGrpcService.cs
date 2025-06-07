@@ -1,8 +1,8 @@
-﻿using AuthService.Data;
-using Grpc.Core;
+﻿using Grpc.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Protos;
+using Shared.Domain.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -11,11 +11,11 @@ namespace AuthService.Services;
 
 public class AuthGrpcService : Protos.Auth.AuthBase
 {
-    private readonly UserManager<User> _userManager;
+    private readonly UserManager<UserEntity> _userManager;
     private readonly IConfiguration _configuration;
 
     public AuthGrpcService(
-        UserManager<User> userManager, 
+        UserManager<UserEntity> userManager, 
         IConfiguration configuration)
     {
         _userManager = userManager;
@@ -24,7 +24,7 @@ public class AuthGrpcService : Protos.Auth.AuthBase
 
     public override async Task<AuthResponse> Register(RegisterRequest request, ServerCallContext context)
     {
-        var user = new User
+        var user = new UserEntity
         {
             UserName = request.Username,
             Email = request.Email,
@@ -50,7 +50,7 @@ public class AuthGrpcService : Protos.Auth.AuthBase
         return await GenerateToken(user);
     }
 
-    private async Task<AuthResponse> GenerateToken(User user)
+    private async Task<AuthResponse> GenerateToken(UserEntity user)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"];

@@ -18,7 +18,7 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="..\Protobuf.Shared\Protos\room.proto" GrpcServices="Both" />
+		<Protobuf Include="..\Shared.Protobuf\Protos\room.proto" GrpcServices="Both" />
 	</ItemGroup>
 
 	<ItemGroup>

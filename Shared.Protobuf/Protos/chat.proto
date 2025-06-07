@@ -1,0 +1,16 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Protos";
+
+package chat;
+
+service Chat {
+	rpc Chat(stream ChatMessage) returns (stream ChatMessage);
+}
+
+message ChatMessage {
+	string userId = 1;
+	string roomId = 2;
+	string text = 3;
+	int64 timestamp = 4; // Unix ms
+}
