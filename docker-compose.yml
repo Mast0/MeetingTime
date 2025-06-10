@@ -15,3 +15,28 @@ services:
       - "8001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+  roomservice:
+    build:
+      context: .
+      dockerfile: RoomService/Dockerfile
+    ports:
+      - "8002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+  chatservice:
+    build:
+      context: .
+      dockerfile: ChatService/Dockerfile
+    ports:
+      - "8003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+  janus:
+    image: meetecho/janus-gateway:latest
+    ports:
+      - "8088:8088"
+      - "8188:8188"
+      - "10000-10200:10000-10200/udp"
+    environment:
+      - JANUS_LISTEN_IP: "0.0.0.0"
+      - JANUS_STUN_SERVER: "stun:stun.l.google.com:19302"

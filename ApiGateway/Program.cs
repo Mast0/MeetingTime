@@ -49,6 +49,9 @@ builder.Services.AddGrpcClient<Chat.ChatClient>(o =>
 
 builder.Services.AddGrpc();
 
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -70,6 +73,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+app.MapReverseProxy();
 app.MapGrpcService<ProxyToChatService>().EnableGrpcWeb();
 app.MapControllers();
 
