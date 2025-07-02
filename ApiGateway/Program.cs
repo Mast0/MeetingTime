@@ -6,6 +6,9 @@ using System.Text;
 using ApiGateway.Proxy;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Net.WebSockets;
+using Microsoft.AspNetCore.Authentication;
+using Grpc.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,6 +93,54 @@ if (app.Environment.IsDevelopment())
 app.UseRouting();
 
 app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
+
+app.UseWebSockets();
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/ws/mediaservice"))
+    {
+        if (context.WebSockets.IsWebSocketRequest)
+        {
+            if (!context.WebSockets.IsWebSocketRequest)
+            {
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
+            }
+
+            var validationResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+            if (!validationResult.Succeeded || validationResult.None)
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return;
+            }
+
+            var rawToken = context.Request.Query["access_token"].FirstOrDefault();
+            if (string.IsNullOrEmpty(rawToken))
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return;
+            }
+
+            var authClient = context.RequestServices.GetRequiredService<Auth.AuthClient>();
+            var validate = await authClient.ValidateAsync(new ValidateRequest { Token = rawToken });
+            if (!validate.IsValid)
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return;
+            }
+
+            using var backendSocket = new ClientWebSocket();
+            var wsBackendUri = new Uri("ws://mediaservice:3001");
+            await backendSocket.ConnectAsync(wsBackendUri, CancellationToken.None);
+
+            using var frontendSocket = await context.WebSockets.AcceptWebSocketAsync();
+            await ProxyHelper.ProxyWebSocket(frontendSocket, backendSocket);
+            return;
+        }
+    }
+    await next();
+});
 
 app.UseHttpsRedirection();
 
