@@ -50,6 +50,35 @@ public class AuthGrpcService : Protos.Auth.AuthBase
         return await GenerateToken(user);
     }
 
+    public override async Task<ValidateResponse> Validate(ValidateRequest request, ServerCallContext context)
+    {
+        var jwtSettings = _configuration.GetSection("JwtSettings");
+        var secretKey = jwtSettings["SecretKey"];
+
+        var handler = new JwtSecurityTokenHandler();
+        try
+        {
+            var principal = handler.ValidateToken(request.Token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+                ValidateIssuer = true,
+                ValidIssuer = jwtSettings["Issuer"],
+                ValidateAudience = true,
+                ValidAudience = jwtSettings["Audience"],
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            }, out var securityToken);
+
+            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return new ValidateResponse { IsValid = true, UserId = userId ?? "" };
+        }
+        catch (Exception ex)
+        {
+            return new ValidateResponse { IsValid = false, Error = ex.Message };
+        }
+    }
+
     private async Task<AuthResponse> GenerateToken(UserEntity user)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");

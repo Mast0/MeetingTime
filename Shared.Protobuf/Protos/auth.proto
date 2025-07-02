@@ -7,6 +7,7 @@ package auth;
 service Auth {
 	rpc Login (LoginRequest) returns (AuthResponse);
 	rpc Register (RegisterRequest) returns (AuthResponse);
+	rpc Validate (ValidateRequest) returns (ValidateResponse);
 }
 
 message LoginRequest {
@@ -23,4 +24,14 @@ message RegisterRequest {
 message AuthResponse {
 	string token = 1;
 	string error = 2;
+}
+
+message ValidateRequest {
+	string token = 1;
+}
+
+message ValidateResponse {
+	bool isValid = 1;
+	string userId = 2;
+	string error = 3;
 }

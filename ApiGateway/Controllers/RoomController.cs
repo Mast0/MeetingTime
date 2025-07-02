@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Protos;
 
 namespace ApiGateway.Controllers;
@@ -14,6 +15,7 @@ public class RoomController : ControllerBase
         _roomClient = roomClient;
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> CreateRoom(CreateRoomRequest req)
     {
@@ -21,6 +23,7 @@ public class RoomController : ControllerBase
         return Ok(res);
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetRoom(GetRoomRequest req)
     {
@@ -28,6 +31,7 @@ public class RoomController : ControllerBase
         return Ok(res);
     }
 
+    [Authorize]
     [HttpPut]
     public async Task<IActionResult> UpdateRoom(UpdateRoomRequest req)
     {
@@ -35,6 +39,7 @@ public class RoomController : ControllerBase
         return Ok(res);
     }
 
+    [Authorize]
     [HttpDelete]
     public async Task<IActionResult> DeleteRoom(DeleteRoomRequest req)
     {

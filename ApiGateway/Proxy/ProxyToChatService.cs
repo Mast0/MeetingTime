@@ -1,4 +1,5 @@
 ﻿using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using Protos;
 
 namespace ApiGateway.Proxy;
@@ -11,6 +12,7 @@ public class ProxyToChatService : Chat.ChatBase
         _chatClient = chatClient;
     }
 
+    [Authorize]
     public override async Task Chat(IAsyncStreamReader<ChatMessage> requestStream, IServerStreamWriter<ChatMessage> responseStream, ServerCallContext context)
     {
         using var call = _chatClient.Chat();

@@ -32,11 +32,11 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
   janus:
-    image: meetecho/janus-gateway:latest
+    image: mcroth/docker-janus:latest
     ports:
       - "8088:8088"
       - "8188:8188"
       - "10000-10200:10000-10200/udp"
     environment:
-      - JANUS_LISTEN_IP: "0.0.0.0"
-      - JANUS_STUN_SERVER: "stun:stun.l.google.com:19302"
+      JANUS_LISTEN_IP: "0.0.0.0"
+      JANUS_STUN_SERVER: "stun:stun.l.google.com:19302"

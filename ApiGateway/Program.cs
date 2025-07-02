@@ -4,6 +4,8 @@ using Grpc.AspNetCore.Web;
 using Protos;
 using System.Text;
 using ApiGateway.Proxy;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +17,7 @@ builder.Services.AddAuthentication(opt =>
     opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddJwtBearer("GatewayAuthenticationScheme", opt =>
+.AddJwtBearer(opt =>
 {
     opt.RequireHttpsMetadata = true;
     opt.SaveToken = true;
@@ -29,6 +31,26 @@ builder.Services.AddAuthentication(opt =>
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
         ClockSkew = TimeSpan.Zero
+    };
+    opt.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async ctx =>
+        {
+            var token = ctx.SecurityToken as JwtSecurityToken;
+            var rawToken = ctx.Request
+                .Headers["Authorization"].ToString()
+                .Replace("Bearer", "");
+
+            var authClient = ctx.HttpContext.RequestServices.GetRequiredService<Auth.AuthClient>();
+
+            var validateReq = new ValidateRequest { Token = rawToken };
+            var validRes = await authClient.ValidateAsync(validateReq);
+
+            if (!validRes.IsValid)
+            {
+                ctx.Fail(validRes.Error);
+            }
+        }
     };
 });
 
