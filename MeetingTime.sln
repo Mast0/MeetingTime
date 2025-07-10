@@ -18,9 +18,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.Domain", "Shared.Dom
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.Infrastructure", "Shared.Infrastructure\Shared.Infrastructure.csproj", "{DA6CAEFA-4FF1-4B07-9D61-E98FD740DAFF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Protobuf", "Shared.Protobuf\Shared.Protobuf.csproj", "{B4C29415-604D-4529-9EA2-3B5DDBD362AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.Protobuf", "Shared.Protobuf\Shared.Protobuf.csproj", "{B4C29415-604D-4529-9EA2-3B5DDBD362AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatService", "ChatService\ChatService.csproj", "{8A3CA2D7-0F91-403C-A986-E149892DEEA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChatService", "ChatService\ChatService.csproj", "{8A3CA2D7-0F91-403C-A986-E149892DEEA3}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{CC67F62C-9D8D-44F4-A4A1-9D85A0067C36}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +58,10 @@ Global
 		{8A3CA2D7-0F91-403C-A986-E149892DEEA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A3CA2D7-0F91-403C-A986-E149892DEEA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A3CA2D7-0F91-403C-A986-E149892DEEA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC67F62C-9D8D-44F4-A4A1-9D85A0067C36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC67F62C-9D8D-44F4-A4A1-9D85A0067C36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC67F62C-9D8D-44F4-A4A1-9D85A0067C36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC67F62C-9D8D-44F4-A4A1-9D85A0067C36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -39,10 +39,10 @@ builder.Services.AddAuthentication(opt =>
     {
         OnTokenValidated = async ctx =>
         {
-            var token = ctx.SecurityToken as JwtSecurityToken;
             var rawToken = ctx.Request
                 .Headers["Authorization"].ToString()
-                .Replace("Bearer", "");
+                .Replace("Bearer", "", StringComparison.OrdinalIgnoreCase)
+                .Trim();
 
             var authClient = ctx.HttpContext.RequestServices.GetRequiredService<Auth.AuthClient>();
 
@@ -82,6 +82,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("AllowAll", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -91,6 +102,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+
+app.UseCors("AllowAll");
 
 app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
 

@@ -24,10 +24,18 @@ public class RoomController : ControllerBase
     }
 
     [Authorize]
-    [HttpGet]
+    [HttpGet("/get-room")]
     public async Task<IActionResult> GetRoom(GetRoomRequest req)
     {
         var res = await _roomClient.GetRoomAsync(req);
+        return Ok(res);
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> GetRooms()
+    {
+        var res = await _roomClient.GetRoomsAsync(new Empty());
         return Ok(res);
     }
 

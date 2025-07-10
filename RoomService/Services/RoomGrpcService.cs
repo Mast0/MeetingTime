@@ -21,7 +21,6 @@ public class RoomGrpcService : Room.RoomBase
             Id = Guid.NewGuid(),
             Name = request.Name,
             MaxParticipiants = request.MaxParticipiants,
-            Quality = request.Quality,
             Password = request.Password,
         };
 
@@ -32,7 +31,6 @@ public class RoomGrpcService : Room.RoomBase
             RoomId = roomResponse.Id.ToString(),
             Name = roomResponse.Name,
             MaxParticipiants = roomResponse.MaxParticipiants,
-            Quality = roomResponse.Quality,
             Password = roomResponse.Password
         };
     }
@@ -50,11 +48,25 @@ public class RoomGrpcService : Room.RoomBase
                 RoomId = room.Id.ToString(),
                 Name = room.Name,
                 MaxParticipiants = room.MaxParticipiants,
-                Quality = room.Quality,
                 Password = room.Password
             };
         }
         return new RoomResponse();
+    }
+
+    public override async Task<RoomsResponse> GetRooms(Empty request, ServerCallContext context)
+    {
+        var rooms = (await _repo.ListAsync()).Select(r => new RoomResponse
+        {
+            RoomId = r.Id.ToString(),
+            Name = r.Name,
+            MaxParticipiants = r.MaxParticipiants,
+            Password = r.Password
+        });
+
+        var response = new RoomsResponse();
+        response.Rooms.AddRange(rooms);
+        return response;
     }
 
     public override async Task<RoomResponse> UpdateRoom(UpdateRoomRequest request, ServerCallContext context)
@@ -65,14 +77,12 @@ public class RoomGrpcService : Room.RoomBase
             if (room == null) return new RoomResponse();
             room.Name = request.Name;
             room.MaxParticipiants = request.MaxParticipiants;
-            room.Quality = request.Quality;
             room.Password = request.Password;
             return new RoomResponse
             {
                 RoomId = room.Id.ToString(),
                 Name = room.Name,
                 MaxParticipiants = room.MaxParticipiants,
-                Quality = room.Quality,
                 Password = room.Password
             };
         }

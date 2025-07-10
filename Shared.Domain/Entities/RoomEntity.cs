@@ -8,8 +8,6 @@ public class RoomEntity
     public string Name { get; set; }
     public int MaxParticipiants { get; set; }
 
-    public string Quality { get; set; }
-
     public string Password { get; set; }
 
     public ICollection<ChatMessageEntity> ChatMessages { get; set; } = new List<ChatMessageEntity>();
