@@ -9,7 +9,7 @@ services:
       - authservice
       - roomservice
       - chatservice
-      - mediaservice
+      # - mediaservice
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
   authservice:
@@ -36,7 +36,7 @@ services:
       - "8003:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-  mediaservice:
-    build: ./MediaService
-    ports: 
-      - "3001:3001"
+  # mediaservice:
+  #   build: ./MediaService
+  #   ports: 
+  #     - "3001:3001"

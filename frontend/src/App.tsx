@@ -3,8 +3,8 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Main from './pages/Main'
 import ProtectedRoute from './components/ProtectedRoute'
-import Rooms from './pages/Rooms'
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/Base.css';
@@ -20,7 +20,7 @@ function App() {
             path='/rooms'
             element={
               <ProtectedRoute>
-                <Rooms />
+                <Main />
               </ProtectedRoute>
             }
           />

@@ -1,0 +1,30 @@
+.sidebar-container {
+  background-color: var(--color-bg-sidebar);
+  border-right: 1px solid var(--color-sidebar-resizer);
+  position: relative;
+}
+
+.sidebar-container.resize-hover {
+  border-right: 2px solid var(--color-sidebar-resizer-hover);
+}
+
+.sidebar-container-item {
+  background-color: transparent;
+  -webkit-text-fill-color: var(--color-primary);
+}
+
+.sidebar-container-item:hover {
+  background-color: var(--color-primary-hover) !important;
+  -webkit-text-fill-color: var(--color-text);
+  transition: .15s ease-in-out;
+}
+
+.sidebar-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 100;
+}

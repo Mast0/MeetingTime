@@ -5,7 +5,7 @@
 
   color-scheme: dark; /*light*/
   color: #e0e0e0;
-  background-color: #121212;
+  background-color: var(--color-bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,10 +13,12 @@
   -moz-osx-font-smoothing: grayscale;
 
   /* Primary colors */
-  --color-bg: #121212;
-  --color-bg-card: #1e1e1e;
-  --color-primary: #28a745;
-  --color-primary-hover: #218838;
+  --color-bg: #1e1e1e;
+  --color-bg-sidebar: #222222;
+  --color-primary: #198753;
+  --color-primary-hover: #198753;
+  --color-sidebar-resizer: #198753;
+  --color-sidebar-resizer-hover: #1b925a;
   --color-text: #e0e0e0;
   --color-text-muted: rgba(255, 255, 255, 0.6);
   --color-link: #28a745;

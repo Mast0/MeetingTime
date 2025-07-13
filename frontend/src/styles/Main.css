@@ -1,0 +1,11 @@
+.modal-header {
+    border-bottom: 1px solid var(--color-primary) !important;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--color-primary) !important;
+}
+
+.room-container {
+    background-color: var(--color-bg);
+}
