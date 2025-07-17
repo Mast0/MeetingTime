@@ -34,6 +34,7 @@ services:
       dockerfile: ChatService/Dockerfile
     ports:
       - "8003:8080"
+      - "8004:8081"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
   # mediaservice:

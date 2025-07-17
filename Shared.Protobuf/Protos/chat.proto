@@ -5,12 +5,20 @@ option csharp_namespace = "Protos";
 package chat;
 
 service Chat {
-	rpc Chat(stream ChatMessage) returns (stream ChatMessage);
+	rpc GetMessages (MessagesRequest) returns (MessagesResponse);
 }
 
-message ChatMessage {
-	string userId = 1;
-	string roomId = 2;
-	string text = 3;
-	int64 timestamp = 4; // Unix ms
+message MessagesRequest {
+	string RoomId = 1;
+}
+
+message Message {
+	string UserId = 1;
+	string RoomId = 2;
+	string Text = 3;
+	int64 Timestamp = 4;
+}
+
+message MessagesResponse {
+	repeated Message messages = 1;
 }

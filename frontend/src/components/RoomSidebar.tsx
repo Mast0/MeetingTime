@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import '../styles/RoomSidebar.css';
 
 interface Room {
-  id: string;
+  roomId: string;
   name: string;
 }
 
 interface Props {
   rooms: Room[];
-  onRoomClick: (roomId: string) => void;
+  onRoomClick: (roomId: string, roomName: string) => void;
   onAddRoomClick: () => void;
   width: number;
 }
@@ -28,10 +28,10 @@ const RoomSidebar: React.FC<Props> = ({ rooms, onRoomClick, onAddRoomClick, widt
       <ul className="list-group list-group-flush">
         {rooms.map((room) => (
           <li
-            key={room.id}
+            key={room.roomId}
             className="sidebar-container-item list-group-item list-group-item-action text-white border-success"
             style={{cursor: 'pointer'}}
-            onClick={() => onRoomClick(room.id)}
+            onClick={() => onRoomClick(room.roomId, room.name)}
           >
             {room.name}
           </li>

@@ -20,11 +20,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Shared.Domain\Shared.Domain.csproj" />
     <ProjectReference Include="..\Shared.Infrastructure\Shared.Infrastructure.csproj" />
-    <ProjectReference Include="..\Shared.Protobuf\Shared.Protobuf.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-	<Protobuf Include="..\Shared.Protobuf\Protos\chat.proto" GrpcServices="Both" />
-  </ItemGroup>
+	<ItemGroup>
+		<Protobuf Include="..\Shared.Protobuf\Protos\chat.proto" GrpcServices="Both" />
+	</ItemGroup>
 
 </Project>

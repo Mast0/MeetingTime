@@ -1,59 +1,34 @@
 ﻿using Grpc.Core;
 using Protos;
-using Shared.Domain.Entities;
 using Shared.Domain.Interfaces;
-using System.Collections.Concurrent;
+using static Protos.Chat;
 
 namespace ChatService.Services;
 
-public class ChatGrpcService : Chat.ChatBase
+public class ChatGrpcService : ChatBase
 {
     private readonly IChatMessageRepository _repo;
-    private static readonly ConcurrentDictionary<string, ConcurrentBag<IServerStreamWriter<ChatMessage>>> _rooms = new();
 
     public ChatGrpcService(IChatMessageRepository repo)
     {
         _repo = repo;
     }
 
-    public override async Task Chat(
-        IAsyncStreamReader<ChatMessage> requestStream,
-        IServerStreamWriter<ChatMessage> responseStream, 
-        ServerCallContext context)
+    public override async Task<MessagesResponse> GetMessages(MessagesRequest request, ServerCallContext context)
     {
-        if (!await requestStream.MoveNext()) return;
-        var first = requestStream.Current;
-        var roomId = first.RoomId;
+        if (string.IsNullOrEmpty(request.RoomId))
+            return new MessagesResponse();
 
-        // Add StreamWriter
-        var bag = _rooms.GetOrAdd(roomId, 
-            _ => new ConcurrentBag<IServerStreamWriter<ChatMessage>>());
-        bag.Add(responseStream);
-
-        // Broadcast function + save
-        async Task BroadcasAndSave(ChatMessage msg)
+        var messages = (await _repo.ListByRoomAsync(request.RoomId)).Select(m => new Message
         {
-            await _repo.AddAsync(new ChatMessageEntity
-            {
-                Id = Guid.NewGuid(),
-                RoomId = Guid.Parse(msg.RoomId),
-                UserId = msg.UserId,
-                Text = msg.Text,
-                Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(msg.Timestamp)
-            });
+            UserId = m.UserId,
+            RoomId = m.RoomId.ToString(),
+            Text = m.Text,
+            Timestamp = m.Timestamp.ToUnixTimeMilliseconds(),
+        });
 
-            foreach (var sub in bag)
-            {
-                try { await sub.WriteAsync(msg); }
-                catch { /* Ignoring */ }
-            }
-        }
-
-        await BroadcasAndSave(first);
-
-        await foreach (var msg in requestStream.ReadAllAsync())
-        {
-            await BroadcasAndSave(msg);
-        }
+        var response = new MessagesResponse();
+        response.Messages.AddRange(messages);
+        return response;
     }
 }

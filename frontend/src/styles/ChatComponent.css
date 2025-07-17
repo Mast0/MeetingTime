@@ -1,0 +1,35 @@
+.chat-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.chat-messages .chat-message {
+    display: inline-block;
+    max-width: 70%;
+    word-wrap: break-word;
+    word-break: break-word;
+    padding: 0.5rem;
+    border-radius: 8px;
+    background-color: var(--color-bg-message);
+    text-align: left;
+}
+
+.chat-messages .chat-message.own {
+    align-self: flex-end;
+    text-align: right;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.chat-input input:focus {
+    outline: none;
+    box-shadow: none;
+}

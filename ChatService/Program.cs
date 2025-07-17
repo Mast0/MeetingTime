@@ -1,3 +1,4 @@
+using ChatService.Handlers;
 using ChatService.Repositories;
 using ChatService.Services;
 using MeetingTime.Domain.Data;
@@ -27,7 +28,10 @@ builder.Services.AddGrpc();
 
 var app = builder.Build();
 
-app.MapGrpcService<ChatGrpcService>();
-app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+app.UseWebSockets();
 
-app.Run();
+app.Map("/ws/chat", ChatWebSocketHandler.Handle);
+
+app.MapGrpcService<ChatGrpcService>();
+
+await app.RunAsync();

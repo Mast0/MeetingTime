@@ -5,10 +5,10 @@ import { AuthContext } from "../context/AuthContext";
 import RoomSidebar from '../components/RoomSidebar';
 import { Modal } from 'bootstrap';
 import CreateRoomModal from '../components/CreateRoomModal';
-import ChatPage from './ChatPage';
+import ChatComponent from '../components/ChatComponent';
 
 interface Room {
-    id: string;
+    roomId: string;
     name: string;
 }
 
@@ -16,7 +16,9 @@ const Main: React.FC = () => {
     const { token, logout } = useContext(AuthContext);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [roomId, setRoomId] = useState('');
+    const [roomName, setRoomName] = useState('');
     const [sidebarWidth, setSidebarWidth] = useState(250);
+    const [isUserSelect, setIsUserSelect] = useState(true);
 
     useEffect(() => {
         const fetchRooms = async () => {
@@ -42,11 +44,13 @@ const Main: React.FC = () => {
         const handleMouseUp = () => {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
+            setIsUserSelect(true);
         };
 
         const handleMouseDown = () => {
             document.addEventListener('mousemove', handleMouseMove);
             document.addEventListener('mouseup', handleMouseUp);
+            setIsUserSelect(false);
         };
 
         (window as any).startSidebarResize = handleMouseDown;
@@ -58,10 +62,13 @@ const Main: React.FC = () => {
     };
 
     return (
-        <div className='d-flex'>
+        <div className='d-flex' style={{ height: '100vh', userSelect: isUserSelect ? 'auto' : 'none'}}>
             <RoomSidebar 
                 rooms={rooms}
-                onRoomClick={(id) => setRoomId(id)}
+                onRoomClick={(id, name) => {
+                    setRoomId(id);
+                    setRoomName(name);
+                }}
                 onAddRoomClick={() => {
                     const modalEl = document.getElementById("createRoomModal");
                     const modal = new Modal(modalEl!);
@@ -69,8 +76,8 @@ const Main: React.FC = () => {
                 }}
                 width={sidebarWidth}
             />
-            <div className='room-container flex-grow-1 text-white p-4'>
-                <ChatPage roomId={roomId}></ChatPage>
+            <div className='room-container flex-grow-1 d-flex flex-column'>
+                {roomId ? <ChatComponent roomId={roomId} roomName={roomName}></ChatComponent> : <p className="text-white">Hello to Meeting Time</p> }
             </div>
             <CreateRoomModal onCreate={handleCreate} />
         </div>

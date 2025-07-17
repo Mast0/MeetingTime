@@ -24,7 +24,7 @@ public class RoomController : ControllerBase
     }
 
     [Authorize]
-    [HttpGet("/get-room")]
+    [HttpGet("get-room")]
     public async Task<IActionResult> GetRoom(GetRoomRequest req)
     {
         var res = await _roomClient.GetRoomAsync(req);
