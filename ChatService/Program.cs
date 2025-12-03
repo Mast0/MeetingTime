@@ -3,6 +3,7 @@ using ChatService.Repositories;
 using ChatService.Services;
 using MeetingTime.Domain.Data;
 using Microsoft.AspNetCore.Identity;
+using Protos;
 using Shared.Domain.Entities;
 using Shared.Domain.Interfaces;
 using Shared.Infrastructure.Extensions;
@@ -25,6 +26,11 @@ builder.Services.AddIdentity<UserEntity, IdentityRole>(opt =>
 builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
 
 builder.Services.AddGrpc();
+
+builder.Services.AddGrpcClient<Auth.AuthClient>(o =>
+{
+    o.Address = new Uri("http://authservice:8080");
+});
 
 var app = builder.Build();
 

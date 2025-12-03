@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Protos;
 
 namespace ApiGateway.Controllers;
@@ -26,5 +27,15 @@ public class AuthController : ControllerBase
     {
         var response = await _authClient.LoginAsync(req);
         return string.IsNullOrEmpty(response.Error) ? Ok(response.Token) : BadRequest(response.Error);
+    }
+
+    [Authorize]
+    [HttpPost("user")]
+    public async Task<IActionResult> GetUser(UserRequest req)
+    {
+        var response = await _authClient.GetUserAsync(req);
+        if (response == null) return NotFound();
+
+        return Ok(response);
     }
 }

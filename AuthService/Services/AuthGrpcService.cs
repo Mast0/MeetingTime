@@ -50,6 +50,35 @@ public class AuthGrpcService : Protos.Auth.AuthBase
         return await GenerateToken(user);
     }
 
+    public override async Task<User> GetUser(UserRequest request, ServerCallContext context)
+    {
+        var user = await _userManager.FindByIdAsync(request.Id);
+        if (user == null) return null;
+
+        return new User 
+        {
+            Id = user.Id,
+            UserName = user.UserName,
+            Email = user.Email,
+        };
+    }
+
+    public override async Task<Users> GetUsersByIds(UsersRequest request, ServerCallContext context)
+    {
+        var users = _userManager.Users.Where(u => request.Ids.Contains(u.Id));
+
+        var response = new Users();
+
+        response.Users_.AddRange(users.Select(u => new User 
+        { 
+            Id = u.Id,
+            UserName = u.UserName,
+            Email = u.Email,
+        }));
+
+        return response;
+    }
+
     public override async Task<ValidateResponse> Validate(ValidateRequest request, ServerCallContext context)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");

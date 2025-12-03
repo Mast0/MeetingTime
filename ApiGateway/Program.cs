@@ -165,12 +165,12 @@ app.Use(async (context, next) =>
                     return;
                 }
 
-                var validationResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
-                if (!validationResult.Succeeded || validationResult.None)
-                {
-                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    return;
-                }
+                //var validationResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+                //if (!validationResult.Succeeded || validationResult.None)
+                //{
+                //    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                //    return;
+                //}
 
                 var rawToken = context.Request.Query["access_token"].FirstOrDefault();
                 if (string.IsNullOrEmpty(rawToken))
@@ -188,6 +188,7 @@ app.Use(async (context, next) =>
                 }
 
                 using var backendSocket = new ClientWebSocket();
+                //var wsBackendUri = new Uri("ws://63.178.115.77:3001");
                 var wsBackendUri = new Uri("ws://mediaservice:3001");
                 await backendSocket.ConnectAsync(wsBackendUri, CancellationToken.None);
 
