@@ -41,3 +41,4 @@ services:
   #   build: ./MediaService
   #   ports: 
   #     - "3001:3001"
+  #     - "9229:9229"     # Node.js debugger port

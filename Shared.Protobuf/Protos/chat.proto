@@ -14,9 +14,10 @@ message MessagesRequest {
 
 message Message {
 	string UserId = 1;
-	string RoomId = 2;
-	string Text = 3;
-	int64 Timestamp = 4;
+	string UserName = 2;
+	string RoomId = 3;
+	string Text = 4;
+	int64 Timestamp = 5;
 }
 
 message MessagesResponse {

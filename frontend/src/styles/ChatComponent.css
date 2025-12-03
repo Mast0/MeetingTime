@@ -33,3 +33,9 @@
     outline: none;
     box-shadow: none;
 }
+
+.call-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}

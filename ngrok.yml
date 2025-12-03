@@ -1,0 +1,10 @@
+version: 3
+agent:
+  authtoken: 30vcW77gMCFeaBVOzLpIo6cx1Bo_3RFkwU87iTMT37Gk9Zy5
+endpoints:
+  - name: frontend
+    upstream:
+      url: http://localhost:5173
+  - name: backend
+    upstream:
+      url: http://localhost:8000

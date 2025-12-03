@@ -8,6 +8,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/Base.css';
+import CallPage from './pages/CallPage'
 
 function App() {
   return (
@@ -17,10 +18,18 @@ function App() {
           <Route path='/login' element={<Login/>} />
           <Route path='/register' element={<Register/>} />
           <Route 
-            path='/rooms'
+            path='/'
             element={
               <ProtectedRoute>
                 <Main />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='call/:roomId'
+            element={
+              <ProtectedRoute>
+                <CallPage />
               </ProtectedRoute>
             }
           />

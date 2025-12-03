@@ -8,6 +8,8 @@ service Auth {
 	rpc Login (LoginRequest) returns (AuthResponse);
 	rpc Register (RegisterRequest) returns (AuthResponse);
 	rpc Validate (ValidateRequest) returns (ValidateResponse);
+	rpc GetUser (UserRequest) returns (User);
+	rpc GetUsersByIds (UsersRequest) returns (Users);
 }
 
 message LoginRequest {
@@ -34,4 +36,22 @@ message ValidateResponse {
 	bool isValid = 1;
 	string userId = 2;
 	string error = 3;
+}
+
+message UserRequest {
+	string id = 1;
+}
+
+message User {
+	string id = 1;
+	string userName = 2;
+	string email = 3;
+}
+
+message UsersRequest {
+	repeated string ids = 1;
+}
+
+message Users {
+	repeated User users = 1;
 }
