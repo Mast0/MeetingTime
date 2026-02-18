@@ -1,15 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Grpc.AspNetCore.Web;
 using Protos;
 using System.Text;
-using ApiGateway.Proxy;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Net.WebSockets;
-using Microsoft.AspNetCore.Authentication;
-using Grpc.Core;
 using System.Net;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,21 +32,58 @@ builder.Services.AddAuthentication(opt =>
     };
     opt.Events = new JwtBearerEvents
     {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) &&
+                (path.StartsWithSegments("/ws/chat") || path.StartsWithSegments("/ws/mediaservice")))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        },
         OnTokenValidated = async ctx =>
         {
-            var rawToken = ctx.Request
-                .Headers["Authorization"].ToString()
-                .Replace("Bearer", "", StringComparison.OrdinalIgnoreCase)
-                .Trim();
+            var jwt = ctx.SecurityToken as JsonWebToken;
+            var rawToken = jwt?.EncodedToken;
 
-            var authClient = ctx.HttpContext.RequestServices.GetRequiredService<Auth.AuthClient>();
-
-            var validateReq = new ValidateRequest { Token = rawToken };
-            var validRes = await authClient.ValidateAsync(validateReq);
-
-            if (!validRes.IsValid)
+            if (string.IsNullOrEmpty(rawToken))
             {
-                ctx.Fail(validRes.Error);
+                if (ctx.Request.Query.ContainsKey("access_token"))
+                {
+                    rawToken = ctx.Request.Query["access_token"];
+                }
+                else
+                {
+                    rawToken = ctx.Request.Headers["Authorization"].ToString()
+                        .Replace("Bearer", "", StringComparison.OrdinalIgnoreCase)
+                        .Trim();
+                }
+            }
+
+            if (string.IsNullOrEmpty(rawToken))
+            {
+                ctx.Fail("Token not found");
+                return;
+            }
+
+            try
+            {
+                var authClient = ctx.HttpContext.RequestServices.GetRequiredService<Auth.AuthClient>();
+
+                var validateReq = new ValidateRequest { Token = rawToken };
+                var validRes = await authClient.ValidateAsync(validateReq);
+
+                if (!validRes.IsValid)
+                {
+                    ctx.Fail(validRes.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                ctx.Fail($"Auth validation failed: {ex.Message}");
             }
         }
     };
@@ -78,13 +109,10 @@ builder.Services.AddGrpcClient<Chat.ChatClient>(o =>
     c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
 });
 
-builder.Services.AddGrpc();
-
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 builder.Services.AddControllers();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -107,105 +135,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseRouting();
-
-app.UseCors("AllowAll");
-
 app.UseWebSockets();
-
-app.Use(async (context, next) =>
-{
-    try
-    {
-        if (context.Request.Path.StartsWithSegments("/ws/chat"))
-        {
-            if (!context.WebSockets.IsWebSocketRequest)
-            {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                return;
-            }
-
-            //var validationResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
-            //if (!validationResult.Succeeded || validationResult.None)
-            //{
-            //    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            //    return;
-            //}
-
-            var rawToken = context.Request.Query["access_token"].FirstOrDefault();
-            if (string.IsNullOrEmpty(rawToken))
-            {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                return;
-            }
-
-            var authClient = context.RequestServices.GetRequiredService<Auth.AuthClient>();
-            var validate = await authClient.ValidateAsync(new ValidateRequest { Token = rawToken });
-            if (!validate.IsValid)
-            {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                return;
-            }
-
-            // ChatService Proxy
-            using var backend = new ClientWebSocket();
-            await backend.ConnectAsync(new Uri("ws://chatservice:8081/ws/chat"), CancellationToken.None);
-
-            using var frontend = await context.WebSockets.AcceptWebSocketAsync();
-            await ProxyHelper.ProxyWebSocket(frontend, backend);
-            return;
-        }
-        if (context.Request.Path.StartsWithSegments("/ws/mediaservice"))
-        {
-            if (context.WebSockets.IsWebSocketRequest)
-            {
-                if (!context.WebSockets.IsWebSocketRequest)
-                {
-                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return;
-                }
-
-                //var validationResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
-                //if (!validationResult.Succeeded || validationResult.None)
-                //{
-                //    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                //    return;
-                //}
-
-                var rawToken = context.Request.Query["access_token"].FirstOrDefault();
-                if (string.IsNullOrEmpty(rawToken))
-                {
-                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    return;
-                }
-
-                var authClient = context.RequestServices.GetRequiredService<Auth.AuthClient>();
-                var validate = await authClient.ValidateAsync(new ValidateRequest { Token = rawToken });
-                if (!validate.IsValid)
-                {
-                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    return;
-                }
-
-                using var backendSocket = new ClientWebSocket();
-                //var wsBackendUri = new Uri("ws://63.178.115.77:3001");
-                var wsBackendUri = new Uri("ws://mediaservice:3001");
-                await backendSocket.ConnectAsync(wsBackendUri, CancellationToken.None);
-
-                using var frontendSocket = await context.WebSockets.AcceptWebSocketAsync();
-                await ProxyHelper.ProxyWebSocket(frontendSocket, backendSocket);
-                return;
-            }
-        }
-    } catch (Exception ex)
-    {
-        throw ex;
-    }
-    await next();
-});
-
-app.UseHttpsRedirection();
-
+app.UseCors("AllowAll");
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapReverseProxy();
