@@ -15,9 +15,9 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route path='/login' element={<Login/>} />
-          <Route path='/register' element={<Register/>} />
-          <Route 
+          <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Register />} />
+          <Route
             path='/'
             element={
               <ProtectedRoute>
@@ -33,7 +33,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path='*' element={<Navigate to='/rooms'/>} />
+          <Route path='*' element={<Navigate to='/' replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

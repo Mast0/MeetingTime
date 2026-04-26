@@ -8,4 +8,10 @@ export class JoinChannelDto {
     @IsNotEmpty()
     @IsString()
     peerId: string;
+
+    @IsString()
+    displayName?: string;
+
+    @IsString()
+    userId?: string;
 }

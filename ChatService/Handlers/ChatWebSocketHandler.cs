@@ -1,4 +1,4 @@
-﻿using ChatService.Models;
+using ChatService.Models;
 using Shared.Domain.Entities;
 using Shared.Domain.Interfaces;
 using System.Collections.Concurrent;
@@ -10,7 +10,7 @@ namespace ChatService.Handlers;
 
 public static class ChatWebSocketHandler
 {
-    private static readonly ConcurrentDictionary<string, ConcurrentBag<WebSocket>> _rooms = new();
+    private static readonly ConcurrentDictionary<string, ConcurrentDictionary<WebSocket, byte>> _rooms = new();
 
     public static async Task Handle(HttpContext ctx)
     {
@@ -41,7 +41,7 @@ public static class ChatWebSocketHandler
 
             // Add room
             var bag = _rooms.GetOrAdd(roomId, _ => new());
-            bag.Add(ws);
+            bag.TryAdd(ws, 1);
 
             var repo = ctx.RequestServices.GetRequiredService<IChatMessageRepository>();
 
@@ -61,11 +61,10 @@ public static class ChatWebSocketHandler
             }
 
             // User exit
-            bag.TryTake(out _);
+            bag.TryRemove(ws, out _);
             await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed", CancellationToken.None);
-        } catch (Exception ex)
+        } catch (Exception)
         {
-            ctx.Response.StatusCode = 400;
             return;
         }
     }
@@ -73,7 +72,7 @@ public static class ChatWebSocketHandler
     private static async Task BroadcastAndSave(
         JsonSerializerOptions opt,
         ChatMessagePayload msg,
-        ConcurrentBag<WebSocket> bag,
+        ConcurrentDictionary<WebSocket, byte> bag,
         IChatMessageRepository repo)
     {
         // Save
@@ -90,7 +89,7 @@ public static class ChatWebSocketHandler
         var data = Encoding.UTF8.GetBytes(json);
         var segment = new ArraySegment<byte>(data);
 
-        foreach (var sock in bag)
+        foreach (var sock in bag.Keys)
         {
             if (sock.State == WebSocketState.Open)
                 await sock.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);

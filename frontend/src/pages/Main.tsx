@@ -1,5 +1,5 @@
 import '../styles/Main.css';
-import React, {useEffect, useState, useContext} from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import { getRooms, createRoom } from "../api/room";
 import { AuthContext } from "../context/AuthContext";
 import RoomSidebar from '../components/RoomSidebar';
@@ -17,67 +17,95 @@ const Main: React.FC = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [roomId, setRoomId] = useState('');
     const [roomName, setRoomName] = useState('');
-    const [sidebarWidth, setSidebarWidth] = useState(250);
-    const [isUserSelect, setIsUserSelect] = useState(true);
+    const [sidebarWidth, setSidebarWidth] = useState(260);
+    const [isResizing, setIsResizing] = useState(false);
 
     useEffect(() => {
+        if (!token) return;
+
+        let cancelled = false;
+
         const fetchRooms = async () => {
-            if (token) {
-                try{
-                    const res = await getRooms();
-                    setRooms(res.rooms);
-                } catch (err) {
-                    logout();
-                }
+            try {
+                const res = await getRooms();
+                if (!cancelled) setRooms(res.rooms);
+            } catch {
+                logout();
             }
         };
 
         fetchRooms();
-    }, [token]);
 
+        return () => { cancelled = true; };
+    }, [token, logout]);
+
+    // Sidebar resize via proper event handlers
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
-            const newWidth = Math.min(Math.max(e.clientX, 150), 500);
+            const newWidth = Math.min(Math.max(e.clientX, 180), 500);
             setSidebarWidth(newWidth);
         };
 
         const handleMouseUp = () => {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
-            setIsUserSelect(true);
+            setIsResizing(false);
         };
 
         const handleMouseDown = () => {
             document.addEventListener('mousemove', handleMouseMove);
             document.addEventListener('mouseup', handleMouseUp);
-            setIsUserSelect(false);
+            setIsResizing(true);
         };
 
         (window as any).startSidebarResize = handleMouseDown;
+
+        return () => {
+            delete (window as any).startSidebarResize;
+        };
     }, []);
 
-    const handleCreate = async (name: string, maxParticipiants: number, password: string) => {
-        const newRoom = await createRoom({ name, maxParticipiants, password });
-        setRooms(prev => [...prev, newRoom]);
-    };
+    const handleCreate = useCallback(async (name: string, maxParticipiants: number, password: string) => {
+        try {
+            const newRoom = await createRoom({ name, maxParticipiants, password });
+            setRooms(prev => [...prev, newRoom]);
+        } catch (err) {
+            console.error("Failed to create room:", err);
+        }
+    }, []);
+
+    const handleOpenModal = useCallback(() => {
+        const modalEl = document.getElementById("createRoomModal");
+        if (modalEl) {
+            const modal = new Modal(modalEl);
+            modal.show();
+        }
+    }, []);
+
+    const handleRoomClick = useCallback((id: string, name: string) => {
+        setRoomId(id);
+        setRoomName(name);
+    }, []);
 
     return (
-        <div className='d-flex' style={{ height: '100vh', userSelect: isUserSelect ? 'auto' : 'none'}}>
-            <RoomSidebar 
+        <div className='main-layout d-flex' style={{ userSelect: isResizing ? 'none' : 'auto' }}>
+            <RoomSidebar
                 rooms={rooms}
-                onRoomClick={(id, name) => {
-                    setRoomId(id);
-                    setRoomName(name);
-                }}
-                onAddRoomClick={() => {
-                    const modalEl = document.getElementById("createRoomModal");
-                    const modal = new Modal(modalEl!);
-                    modal.show();
-                }}
+                onRoomClick={handleRoomClick}
+                onAddRoomClick={handleOpenModal}
                 width={sidebarWidth}
+                activeRoomId={roomId}
             />
-            <div className='room-container flex-grow-1 d-flex flex-column'>
-                {roomId ? <ChatComponent roomId={roomId} roomName={roomName}></ChatComponent> : <p className="text-white">Hello to Meeting Time</p> }
+            <div className='room-container'>
+                {roomId
+                    ? <ChatComponent roomId={roomId} roomName={roomName} />
+                    : (
+                        <div className="room-empty-state">
+                            <div className="room-empty-icon">💬</div>
+                            <p className="room-empty-text">Select a room to start chatting</p>
+                        </div>
+                    )
+                }
             </div>
             <CreateRoomModal onCreate={handleCreate} />
         </div>

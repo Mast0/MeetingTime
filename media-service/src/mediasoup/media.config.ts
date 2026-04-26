@@ -22,11 +22,12 @@ export const mediaCodecs: RtpCodecCapability[] = [
 export const webRtcTransport_options: WebRtcTransportOptions = {
     listenIps: [
         {
-            ip: process.env.WEBRTC_LISTEN_IP || '127.0.0.1',
+            ip: process.env.WEBRTC_LISTEN_IP || '0.0.0.0',
             announcedIp: process.env.WEBRTC_ANNOUNCED_IP || '127.0.0.1',
         },
     ],
     enableUdp: true,
     enableTcp: true,
     preferUdp: true,
+    initialAvailableOutgoingBitrate: 1000000,
 }

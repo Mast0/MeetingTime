@@ -1,35 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: dark; /*light*/
-  color: #e0e0e0;
-  background-color: var(--color-bg);
+  color-scheme: dark;
+  color: #e2e8f0;
+  background-color: #1a1a2e;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Primary colors */
-  --color-bg: #1e1e1e;
-  --color-bg-sidebar: #222222;
-  --color-bg-message: #2c2c2c;
-  --color-primary: #198753;
-  --color-primary-hover: #198753;
-  --color-sidebar-resizer: #198753;
-  --color-sidebar-resizer-hover: #1b925a;
-  --color-text: #e0e0e0;
-  --color-text-muted: rgba(255, 255, 255, 0.6);
-  --color-link: #28a745;
-  --color-link-hover: #45c463;
+  /* ─── Design Tokens (matching CallPage navy theme) ─── */
+  --color-bg: #1a1a2e;
+  --color-bg-elevated: #16213e;
+  --color-bg-surface: #1f2b47;
+  --color-bg-card: #16213e;
+  --color-bg-sidebar: #0f0f1e;
+  --color-bg-message: #1f2b47;
+  --color-bg-input: #1f2b47;
+
+  --color-accent: #4ade80;
+  --color-accent-hover: #22c55e;
+  --color-accent-subtle: rgba(74, 222, 128, 0.1);
+  --color-accent-glow: rgba(74, 222, 128, 0.2);
+
+  --color-blue: #4299e1;
+  --color-red: #e53e3e;
+  --color-red-hover: #c53030;
+
+  --color-text: #e2e8f0;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: rgba(255, 255, 255, 0.4);
+
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-accent: rgba(74, 222, 128, 0.3);
+
+  --color-link: #4ade80;
+  --color-link-hover: #86efac;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 20px rgba(74, 222, 128, 0.15);
 }
 
 a {
   font-weight: 500;
   color: var(--color-link);
   text-decoration: none;
+  transition: color 0.2s ease;
 }
 a:hover {
   color: var(--color-link-hover);
@@ -44,40 +72,22 @@ body {
 }
 
 h1, h2, h3, h4, h5 {
-  color: var(--color-primary);
+  color: var(--color-accent);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: var(--color-primary);
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 6px;
 }
-button:hover {
-  border-color: var(--color-primary-hover);
+::-webkit-scrollbar-track {
+  background: transparent;
 }
-button:focus,
-button:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
 }
-
-/* 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-} */
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

@@ -1,4 +1,4 @@
-﻿using Grpc.Core;
+using Grpc.Core;
 using MeetingTime.Domain.Entities;
 using Protos;
 using Shared.Domain.Interfaces;
@@ -78,6 +78,7 @@ public class RoomGrpcService : Room.RoomBase
             room.Name = request.Name;
             room.MaxParticipiants = request.MaxParticipiants;
             room.Password = request.Password;
+            await _repo.UpdateAsync(room);
             return new RoomResponse
             {
                 RoomId = room.Id.ToString(),
@@ -89,13 +90,12 @@ public class RoomGrpcService : Room.RoomBase
         return new RoomResponse();
     }
 
-    public override Task<Empty> DeleteRoom(DeleteRoomRequest request, ServerCallContext context)
+    public override async Task<Empty> DeleteRoom(DeleteRoomRequest request, ServerCallContext context)
     {
         if (Guid.TryParse(request.RoomId, out var guid))
         {
-            _repo.DeleteAsync(guid);
-            return Task.FromResult(new Empty());
+            await _repo.DeleteAsync(guid);
         }
-        return Task.FromResult(new Empty());
+        return new Empty();
     }
 }

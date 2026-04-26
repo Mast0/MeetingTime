@@ -1,4 +1,4 @@
-﻿using Grpc.Core;
+using Grpc.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Protos;
@@ -108,7 +108,7 @@ public class AuthGrpcService : Protos.Auth.AuthBase
         }
     }
 
-    private async Task<AuthResponse> GenerateToken(UserEntity user)
+    private Task<AuthResponse> GenerateToken(UserEntity user)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"];
@@ -126,11 +126,11 @@ public class AuthGrpcService : Protos.Auth.AuthBase
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
-            expires: DateTime.UtcNow.AddHours(int.Parse(jwtSettings["ExpirationTime"])),
+            expires: DateTime.UtcNow.AddHours(int.TryParse(jwtSettings["ExpirationTime"], out var exp) ? exp : 3),
             claims: claims,
             signingCredentials: creds
         );
 
-        return new AuthResponse { Token = new JwtSecurityTokenHandler().WriteToken(token) };
+        return Task.FromResult(new AuthResponse { Token = new JwtSecurityTokenHandler().WriteToken(token) });
     }
 }

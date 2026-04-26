@@ -1,30 +1,122 @@
+/* ─── Sidebar ─── */
 .sidebar-container {
-  background-color: var(--color-bg-sidebar);
-  border-right: 1px solid var(--color-sidebar-resizer);
-  position: relative;
+    background: var(--color-bg-sidebar);
+    border-right: 1px solid var(--color-border);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s ease;
 }
 
 .sidebar-container.resize-hover {
-  border-right: 2px solid var(--color-sidebar-resizer-hover);
+    border-right: 2px solid var(--color-accent);
 }
 
-.sidebar-container-item {
-  background-color: transparent !important;
-  -webkit-text-fill-color: var(--color-primary);
+/* ─── Sidebar Header ─── */
+.sidebar-header {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.sidebar-container-item:hover {
-  background-color: var(--color-primary-hover) !important;
-  -webkit-text-fill-color: var(--color-text);
-  transition: .15s ease-in-out;
+.sidebar-header h5 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    letter-spacing: 0.02em;
 }
 
+.sidebar-add-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elevated);
+    color: var(--color-accent);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+    line-height: 1;
+}
+
+.sidebar-add-btn:hover {
+    background: var(--color-accent);
+    color: #000;
+    border-color: var(--color-accent);
+    transform: scale(1.05);
+}
+
+/* ─── Room List ─── */
+.sidebar-rooms {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.sidebar-room-item {
+    padding: 0.65rem 0.85rem;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border: none;
+    background: transparent;
+    text-align: left;
+    width: 100%;
+}
+
+.sidebar-room-item:hover {
+    background: var(--color-accent-subtle);
+    color: var(--color-accent);
+}
+
+.sidebar-room-item.active {
+    background: var(--color-accent);
+    color: #000;
+    font-weight: 600;
+}
+
+.sidebar-room-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--color-bg-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.sidebar-room-item:hover .sidebar-room-icon {
+    background: var(--color-accent-glow);
+}
+
+/* ─── Resizer ─── */
 .sidebar-resizer {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 10px;
-  height: 100%;
-  cursor: col-resize;
-  z-index: 100;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 100;
+    transition: background 0.2s ease;
+}
+
+.sidebar-resizer:hover {
+    background: var(--color-accent-glow);
 }

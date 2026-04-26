@@ -26,8 +26,6 @@ export class TransportService {
                 clientDirection: direction,
             },
         });
-        
-        this.roomService.addPeerToRoom(roomId, peerId);
 
         const peer = room.peers.get(peerId)!;
         peer.transports.set(transport.id, { transport });
