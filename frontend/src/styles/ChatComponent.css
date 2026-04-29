@@ -26,9 +26,6 @@
 
 /* ─── Call Button ─── */
 .call-btn {
-    position: absolute;
-    top: 0.75rem;
-    right: 1rem;
     z-index: 5;
     background: var(--color-bg-surface);
     border: 1px solid var(--color-border);
@@ -122,4 +119,91 @@
     border-radius: var(--radius-md);
     padding: 0.5rem 1.25rem;
     font-weight: 600;
+}
+
+/* ─── Header Actions ─── */
+.chat-header-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.chat-header-btn {
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    border-radius: var(--radius-sm);
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+}
+
+.chat-header-btn:hover {
+    background: var(--color-accent-subtle);
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+.chat-member-count {
+    background: var(--color-accent);
+    color: #000;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.1em 0.4em;
+    border-radius: 8px;
+    min-width: 16px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* ─── Lazy Loading ─── */
+.load-more-sentinel {
+    height: 1px;
+    width: 100%;
+    flex-shrink: 0;
+}
+
+.load-more-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.6rem 0;
+}
+
+.load-more-spinner .spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-border);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: chat-spin 0.7s linear infinite;
+}
+
+@keyframes chat-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.chat-history-start {
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem 0 0.75rem;
+}
+
+.chat-history-start span {
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    padding: 0.2em 0.9em;
+    letter-spacing: 0.02em;
 }

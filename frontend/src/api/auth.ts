@@ -21,3 +21,8 @@ export const getUser = async (data: { id: string }) => {
     const response = await apiClient.post('/auth/user', data);
     return response.data;
 };
+
+export const searchUsers = async (query: string) => {
+    const response = await apiClient.get('/auth/search', { params: { query } });
+    return response.data;
+};

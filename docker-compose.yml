@@ -1,4 +1,10 @@
 services:
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
   apigateway:
     build:
       context: .
@@ -9,25 +15,33 @@ services:
       - authservice
       - roomservice
       - chatservice
+      - redis
       # - mediaservice
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - Redis__Connection=redis:6379
   authservice:
     build:
       context: .
       dockerfile: AuthService/Dockerfile
     ports:
       - "8001:8080"
+    depends_on:
+      - redis
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - Redis__Connection=redis:6379
   roomservice:
     build:
       context: .
       dockerfile: RoomService/Dockerfile
     ports:
       - "8002:8080"
+    depends_on:
+      - redis
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - Redis__Connection=redis:6379
   chatservice:
     build:
       context: .
@@ -35,10 +49,14 @@ services:
     ports:
       - "8003:8080"
       - "8004:8081"
+    depends_on:
+      - redis
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - Redis__Connection=redis:6379
+      - Encryption__Key=JBhvgkZlrD0kp+UpnsPSmR2tMPNHnPoc0aLFqp89gYo=
   # mediaservice:
   #   build: ./MediaService
   #   ports: 
   #     - "3001:3001"
-  #     - "9229:9229"     # Node.js debugger port
+  #     - "9229:9229"     # Node.js debugger port

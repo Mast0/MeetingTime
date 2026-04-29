@@ -1,4 +1,4 @@
-﻿using Shared.Domain.Entities;
+using Shared.Domain.Entities;
 
 namespace MeetingTime.Domain.Entities;
 
@@ -11,4 +11,5 @@ public class RoomEntity
     public string Password { get; set; }
 
     public ICollection<ChatMessageEntity> ChatMessages { get; set; } = new List<ChatMessageEntity>();
+    public ICollection<RoomMemberEntity> Members { get; set; } = new List<RoomMemberEntity>();
 }

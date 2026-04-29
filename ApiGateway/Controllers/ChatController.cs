@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Protos;
 
@@ -16,9 +16,19 @@ public class ChatController : ControllerBase
     }
 
     [Authorize]
-    [HttpPost("rooms")]
-    public async Task<IActionResult> GetMessages(MessagesRequest req)
+    [HttpGet("rooms/{roomId}/messages")]
+    public async Task<IActionResult> GetMessages(
+        string roomId,
+        [FromQuery] long beforeTimestamp = 0,
+        [FromQuery] int pageSize = 0)
     {
+        var req = new MessagesRequest
+        {
+            RoomId          = roomId,
+            BeforeTimestamp = beforeTimestamp,
+            PageSize        = pageSize,
+        };
+
         var res = await _chatClient.GetMessagesAsync(req);
         return Ok(res);
     }

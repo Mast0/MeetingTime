@@ -10,11 +10,12 @@ interface Props {
   rooms: Room[];
   onRoomClick: (roomId: string, roomName: string) => void;
   onAddRoomClick: () => void;
+  onSearchClick: () => void;
   width: number;
   activeRoomId?: string;
 }
 
-const RoomSidebar: React.FC<Props> = ({ rooms, onRoomClick, onAddRoomClick, width, activeRoomId }) => {
+const RoomSidebar: React.FC<Props> = ({ rooms, onRoomClick, onAddRoomClick, onSearchClick, width, activeRoomId }) => {
   const [resizeHover, setResizeHover] = useState(false);
 
   return (
@@ -24,9 +25,14 @@ const RoomSidebar: React.FC<Props> = ({ rooms, onRoomClick, onAddRoomClick, widt
     >
       <div className="sidebar-header">
         <h5>Rooms</h5>
-        <button className="sidebar-add-btn" onClick={onAddRoomClick} title="Create room">
-          +
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button className="sidebar-add-btn" onClick={onSearchClick} title="Explore public rooms">
+            🔍
+          </button>
+          <button className="sidebar-add-btn" onClick={onAddRoomClick} title="Create room">
+            +
+          </button>
+        </div>
       </div>
 
       <div className="sidebar-rooms">

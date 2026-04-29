@@ -236,7 +236,7 @@ const CallPage: React.FC = () => {
 
     // ─── Consume ───
 
-    const consume = useCallback(async ({ producerId, peerId, kind }: any) => {
+    const consume = useCallback(async ({ producerId, peerId }: any) => {
         const device = deviceRef.current;
         const recvTransport = recvTransportRef.current;
         const sock = socketRef.current;
@@ -320,8 +320,8 @@ const CallPage: React.FC = () => {
             });
     }, [removeConsumer, updatePeerMedia]);
 
-    const handleNewProducer = useCallback(async ({ producerId, peerId, kind }: any) => {
-        await consume({ producerId, peerId, kind });
+    const handleNewProducer = useCallback(async ({ producerId, peerId }: any) => {
+        await consume({ producerId, peerId });
     }, [consume]);
 
     // ─── Transport Setup ───

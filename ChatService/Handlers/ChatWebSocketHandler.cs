@@ -1,4 +1,5 @@
 using ChatService.Models;
+using ChatService.Services;
 using Shared.Domain.Entities;
 using Shared.Domain.Interfaces;
 using System.Collections.Concurrent;
@@ -10,7 +11,14 @@ namespace ChatService.Handlers;
 
 public static class ChatWebSocketHandler
 {
+    // Per-instance local sockets only — cross-instance delivery is done via Redis Pub/Sub
     private static readonly ConcurrentDictionary<string, ConcurrentDictionary<WebSocket, byte>> _rooms = new();
+
+    private static readonly JsonSerializerOptions JsonOpt = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        IncludeFields = true,
+    };
 
     public static async Task Handle(HttpContext ctx)
     {
@@ -20,73 +28,103 @@ public static class ChatWebSocketHandler
             return;
         }
 
-        var opt = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            IncludeFields = true,
-        };
-
-        var ws = await ctx.WebSockets.AcceptWebSocketAsync();
+        var ws     = await ctx.WebSockets.AcceptWebSocketAsync();
         string roomId = null!;
 
-        // Accept first message with JSON that have roomId and userId
         try
         {
-            var buffer = new byte[8192];
+            var buffer  = new byte[8192];
             var segment = new ArraySegment<byte>(buffer);
-            var result = await ws.ReceiveAsync(segment, CancellationToken.None);
-            var text = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            var join = JsonSerializer.Deserialize<JoinMessage>(text, opt)!;
-            roomId = join.RoomId;
 
-            // Add room
+            // First message: join handshake
+            var result = await ws.ReceiveAsync(segment, CancellationToken.None);
+            var text   = Encoding.UTF8.GetString(buffer, 0, result.Count);
+            var join   = JsonSerializer.Deserialize<JoinMessage>(text, JsonOpt)!;
+            roomId     = join.RoomId;
+
+            var repo       = ctx.RequestServices.GetRequiredService<IChatMessageRepository>();
+            var encryption = ctx.RequestServices.GetRequiredService<IAesEncryptionService>();
+            var pubSub     = ctx.RequestServices.GetRequiredService<IRedisPubSubService>();
+
+            // Register socket in the local room bucket
             var bag = _rooms.GetOrAdd(roomId, _ => new());
             bag.TryAdd(ws, 1);
 
-            var repo = ctx.RequestServices.GetRequiredService<IChatMessageRepository>();
+            // Subscribe to Redis channel (idempotent — SE.Redis deduplicates)
+            await pubSub.SubscribeAsync(roomId, async payload =>
+            {
+                await SendToLocalSocketsAsync(payload, bag);
+            });
 
-            // Sharing join message
-            await BroadcastAndSave(opt, join.ToChatMsg(), bag, repo);
+            // Broadcast join notification via Redis (reaches all instances)
+            await pubSub.PublishAsync(roomId, join.ToChatMsg());
 
-            // Read all new msg`s
+            // Main receive loop
             while (!result.CloseStatus.HasValue)
             {
                 result = await ws.ReceiveAsync(segment, CancellationToken.None);
                 if (result.MessageType == WebSocketMessageType.Close) break;
 
-                text = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                var chat = JsonSerializer.Deserialize<ChatPayload>(text, opt)!;
+                text       = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                var chat   = JsonSerializer.Deserialize<ChatPayload>(text, JsonOpt)!;
+                var chatMsg = chat.ToChatMsg();
 
-                await BroadcastAndSave(opt, chat.ToChatMsg(), bag, repo);
+                // Persist encrypted message, invalidate cache, then publish plaintext via Redis
+                await PersistAsync(chatMsg, repo, encryption);
+                await pubSub.PublishAsync(roomId, chatMsg);
             }
 
-            // User exit
+            // Cleanup
             bag.TryRemove(ws, out _);
+            if (bag.IsEmpty)
+            {
+                _rooms.TryRemove(roomId, out _);
+                await pubSub.UnsubscribeAsync(roomId);
+            }
+
             await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed", CancellationToken.None);
-        } catch (Exception)
+        }
+        catch (Exception)
         {
-            return;
+            // Ensure cleanup on error
+            if (roomId != null && _rooms.TryGetValue(roomId, out var bag))
+            {
+                bag.TryRemove(ws, out _);
+                if (bag.IsEmpty)
+                    _rooms.TryRemove(roomId, out _);
+            }
         }
     }
 
-    private static async Task BroadcastAndSave(
-        JsonSerializerOptions opt,
+    /// <summary>
+    /// Persists a real chat message with encrypted text to the database.
+    /// </summary>
+    private static async Task PersistAsync(
         ChatMessagePayload msg,
-        ConcurrentDictionary<WebSocket, byte> bag,
-        IChatMessageRepository repo)
+        IChatMessageRepository repo,
+        IAesEncryptionService encryption)
     {
-        // Save
+        var encryptedText = encryption.Encrypt(msg.Text);
+
         await repo.AddAsync(new ChatMessageEntity
         {
-            Id = Guid.NewGuid(),
-            RoomId = Guid.Parse(msg.RoomId),
-            UserId = msg.UserId,
-            Text = msg.Text,
+            Id        = Guid.NewGuid(),
+            RoomId    = Guid.Parse(msg.RoomId),
+            UserId    = msg.UserId,
+            Text      = encryptedText,
             Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(msg.Timestamp),
         });
+    }
 
-        var json = JsonSerializer.Serialize(msg, opt);
-        var data = Encoding.UTF8.GetBytes(json);
+    /// <summary>
+    /// Sends the payload JSON to all open WebSocket connections local to this instance.
+    /// </summary>
+    private static async Task SendToLocalSocketsAsync(
+        ChatMessagePayload payload,
+        ConcurrentDictionary<WebSocket, byte> bag)
+    {
+        var json    = JsonSerializer.Serialize(payload, JsonOpt);
+        var data    = Encoding.UTF8.GetBytes(json);
         var segment = new ArraySegment<byte>(data);
 
         foreach (var sock in bag.Keys)

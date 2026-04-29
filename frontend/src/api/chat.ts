@@ -1,6 +1,18 @@
 import apiClient from "./client";
 
-export const getMessages = async (data: { RoomId: string }) => {
-    const response = await apiClient.post('/chat/rooms', data);
+export const getMessages = async (params: {
+    roomId: string;
+    beforeTimestamp?: number;
+    pageSize?: number;
+}) => {
+    const response = await apiClient.get(
+        `/chat/rooms/${params.roomId}/messages`,
+        {
+            params: {
+                beforeTimestamp: params.beforeTimestamp,
+                pageSize: params.pageSize,
+            },
+        }
+    );
     return response.data;
 };

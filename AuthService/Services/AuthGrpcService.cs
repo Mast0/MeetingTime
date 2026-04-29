@@ -1,8 +1,10 @@
 using Grpc.Core;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Protos;
 using Shared.Domain.Entities;
+using StackExchange.Redis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -13,13 +15,16 @@ public class AuthGrpcService : Protos.Auth.AuthBase
 {
     private readonly UserManager<UserEntity> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly IDatabase _redis;
 
     public AuthGrpcService(
-        UserManager<UserEntity> userManager, 
-        IConfiguration configuration)
+        UserManager<UserEntity> userManager,
+        IConfiguration configuration,
+        IConnectionMultiplexer redis)
     {
-        _userManager = userManager;
+        _userManager   = userManager;
         _configuration = configuration;
+        _redis         = redis.GetDatabase();
     }
 
     public override async Task<AuthResponse> Register(RegisterRequest request, ServerCallContext context)
@@ -79,10 +84,44 @@ public class AuthGrpcService : Protos.Auth.AuthBase
         return response;
     }
 
+    public override async Task<Users> SearchUsers(SearchUsersRequest request, ServerCallContext context)
+    {
+        var query = request.Query?.Trim().ToLower() ?? "";
+        if (string.IsNullOrEmpty(query))
+            return new Users();
+
+        // Fetch users into memory (since we have a small DB, it's fine for now, but ideally we'd cache this or use a search index)
+        var allUsers = await _userManager.Users.ToListAsync();
+
+        var scoredUsers = allUsers
+            .Select(u => new
+            {
+                User = u,
+                Score = Math.Max(
+                    FuzzySharp.Fuzz.WeightedRatio(query, u.UserName?.ToLower() ?? ""),
+                    FuzzySharp.Fuzz.WeightedRatio(query, u.Email?.ToLower() ?? "")
+                )
+            })
+            .Where(x => x.Score >= 50)
+            .OrderByDescending(x => x.Score)
+            .Take(10)
+            .Select(x => x.User);
+
+        var response = new Users();
+        response.Users_.AddRange(scoredUsers.Select(u => new User
+        {
+            Id = u.Id,
+            UserName = u.UserName ?? "",
+            Email = u.Email ?? "",
+        }));
+
+        return response;
+    }
+
     public override async Task<ValidateResponse> Validate(ValidateRequest request, ServerCallContext context)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
-        var secretKey = jwtSettings["SecretKey"];
+        var secretKey   = jwtSettings["SecretKey"];
 
         var handler = new JwtSecurityTokenHandler();
         try
@@ -90,14 +129,20 @@ public class AuthGrpcService : Protos.Auth.AuthBase
             var principal = handler.ValidateToken(request.Token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-                ValidateIssuer = true,
-                ValidIssuer = jwtSettings["Issuer"],
-                ValidateAudience = true,
-                ValidAudience = jwtSettings["Audience"],
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
+                IssuerSigningKey        = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+                ValidateIssuer          = true,
+                ValidIssuer             = jwtSettings["Issuer"],
+                ValidateAudience        = true,
+                ValidAudience           = jwtSettings["Audience"],
+                ValidateLifetime        = true,
+                ClockSkew               = TimeSpan.Zero
             }, out var securityToken);
+
+            // Check JWT blacklist — token may have been invalidated by Logout
+            var jwt = securityToken as JwtSecurityToken;
+            var jti = jwt?.Id;
+            if (!string.IsNullOrEmpty(jti) && await _redis.KeyExistsAsync(BlacklistKey(jti)))
+                return new ValidateResponse { IsValid = false, Error = "Token has been revoked" };
 
             var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             return new ValidateResponse { IsValid = true, UserId = userId ?? "" };
@@ -107,6 +152,31 @@ public class AuthGrpcService : Protos.Auth.AuthBase
             return new ValidateResponse { IsValid = false, Error = ex.Message };
         }
     }
+
+    public override Task<LogoutResponse> Logout(LogoutRequest request, ServerCallContext context)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        try
+        {
+            // Parse without validating signature — we just need the claims
+            var jwt = handler.ReadJwtToken(request.Token);
+            var jti = jwt.Id;
+            if (string.IsNullOrEmpty(jti))
+                return Task.FromResult(new LogoutResponse { Success = false });
+
+            var remaining = jwt.ValidTo - DateTime.UtcNow;
+            if (remaining > TimeSpan.Zero)
+                _redis.StringSet(BlacklistKey(jti), "1", remaining);
+
+            return Task.FromResult(new LogoutResponse { Success = true });
+        }
+        catch
+        {
+            return Task.FromResult(new LogoutResponse { Success = false });
+        }
+    }
+
+    private static string BlacklistKey(string jti) => $"blacklist:{jti}";
 
     private Task<AuthResponse> GenerateToken(UserEntity user)
     {
@@ -118,6 +188,7 @@ public class AuthGrpcService : Protos.Auth.AuthBase
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // unique token ID for blacklisting
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(ClaimTypes.Name, user.UserName),
             new Claim(ClaimTypes.NameIdentifier, user.Id)

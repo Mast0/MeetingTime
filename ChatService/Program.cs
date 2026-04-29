@@ -11,6 +11,7 @@ using Shared.Infrastructure.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSharedInfrastructure(builder.Configuration);
+builder.Services.AddRedis(builder.Configuration);
 
 builder.Services.AddIdentity<UserEntity, IdentityRole>(opt =>
 {
@@ -23,6 +24,8 @@ builder.Services.AddIdentity<UserEntity, IdentityRole>(opt =>
 .AddEntityFrameworkStores<MeetingTimeContext>()
 .AddDefaultTokenProviders();
 
+builder.Services.AddSingleton<IAesEncryptionService, AesEncryptionService>();
+builder.Services.AddSingleton<IRedisPubSubService, RedisPubSubService>();
 builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
 
 builder.Services.AddGrpc();

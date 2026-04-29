@@ -13,6 +13,7 @@ var services = builder.Services;
 
 // Add DB connection
 services.AddSharedInfrastructure(builder.Configuration);
+services.AddRedis(builder.Configuration);
 
 // Add Identity and Role managment
 services.AddIdentity<UserEntity, IdentityRole>(opt =>

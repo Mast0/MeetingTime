@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Protos;
+using System.Security.Claims;
 
 namespace ApiGateway.Controllers;
 
@@ -19,6 +20,10 @@ public class RoomController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateRoom(CreateRoomRequest req)
     {
+        // Inject the authenticated user's ID as the room creator
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        req.CreatorUserId = userId ?? "";
+
         var res = await _roomClient.CreateRoomAsync(req);
         return Ok(res);
     }
@@ -40,6 +45,17 @@ public class RoomController : ControllerBase
     }
 
     [Authorize]
+    [HttpGet("my")]
+    public async Task<IActionResult> GetMyRooms()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        var res = await _roomClient.GetRoomsByUserAsync(new GetRoomsByUserRequest { UserId = userId });
+        return Ok(res);
+    }
+
+    [Authorize]
     [HttpPut]
     public async Task<IActionResult> UpdateRoom(UpdateRoomRequest req)
     {
@@ -54,4 +70,55 @@ public class RoomController : ControllerBase
         var res = await _roomClient.DeleteRoomAsync(req);
         return Ok(res);
     }
+
+    // ─── Membership Endpoints ───
+
+    [Authorize]
+    [HttpPost("{roomId}/members")]
+    public async Task<IActionResult> AddMember(string roomId, [FromBody] AddMemberRequest body)
+    {
+        var res = await _roomClient.AddRoomMemberAsync(new AddRoomMemberRequest
+        {
+            RoomId = roomId,
+            UserId = body.UserId
+        });
+        return Ok(res);
+    }
+
+    [Authorize]
+    [HttpDelete("{roomId}/members/{userId}")]
+    public async Task<IActionResult> RemoveMember(string roomId, string userId)
+    {
+        var res = await _roomClient.RemoveRoomMemberAsync(new RemoveRoomMemberRequest
+        {
+            RoomId = roomId,
+            UserId = userId
+        });
+        return Ok(res);
+    }
+
+    [Authorize]
+    [HttpGet("{roomId}/members")]
+    public async Task<IActionResult> GetMembers(string roomId)
+    {
+        var res = await _roomClient.GetRoomMembersAsync(new GetRoomMembersRequest
+        {
+            RoomId = roomId
+        });
+        return Ok(res);
+    }
+
+    [Authorize]
+    [HttpGet("public/search")]
+    public async Task<IActionResult> SearchPublicRooms([FromQuery] string query = "")
+    {
+        var res = await _roomClient.SearchPublicRoomsAsync(new SearchPublicRoomsRequest { Query = query ?? "" });
+        return Ok(res);
+    }
+}
+
+// Simple DTO for the add-member request body
+public class AddMemberRequest
+{
+    public string UserId { get; set; } = "";
 }
