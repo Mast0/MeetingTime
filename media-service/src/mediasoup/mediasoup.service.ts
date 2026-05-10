@@ -19,8 +19,8 @@ export class MediasoupService implements OnModuleInit {
 
     private async createWorker() {
         const worker = await mediasoup.createWorker({
-            rtcMinPort: 6002,
-            rtcMaxPort: 6202,
+            rtcMinPort: 10000,
+            rtcMaxPort: 11000,
         });
 
         worker.on('died', () => {

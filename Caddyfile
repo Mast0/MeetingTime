@@ -1,0 +1,21 @@
+{$DOMAIN}
+
+# API Gateway
+handle /api/* {
+    reverse_proxy apigateway:8080
+}
+
+# Chat Websockets
+handle /ws/chat* {
+    reverse_proxy chatservice:8081
+}
+
+# Media Service Websockets (Socket.IO)
+handle /socket.io/* {
+    reverse_proxy mediaservice:5000
+}
+
+# Frontend
+handle /* {
+    reverse_proxy frontend:80
+}
