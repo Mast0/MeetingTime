@@ -73,8 +73,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = servicesScope.GetRequiredService<MeetingTime.Domain.Data.MeetingTimeContext>();
-        Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AsAsyncEnumerable(context.Users); // dummy access to ensure EF Core is loaded
-        context.Database.Migrate();
+        context.Database.EnsureCreated();
         Log.Information("Database migrations applied successfully.");
     }
     catch (Exception ex)
