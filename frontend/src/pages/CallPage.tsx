@@ -108,7 +108,7 @@ const CallPage: React.FC = () => {
     const [captions, setCaptions] = useState<{ peerId: string; displayName: string; text: string; id: number }[]>([]);
     const [interimCaption, setInterimCaption] = useState<string>(''); // live partial text shown while speaking
     const captionIdRef = useRef(0);
-    const recognitionRef = useRef<SpeechRecognition | null>(null);
+    const recognitionRef = useRef<any | null>(null);
 
     // Clear unread count when chat opens
     useEffect(() => {
@@ -831,12 +831,12 @@ const CallPage: React.FC = () => {
             return;
         }
 
-        const recognition = new SpeechRecognition() as SpeechRecognition;
+        const recognition = new SpeechRecognition() as any;
         recognition.continuous = true;
         recognition.interimResults = true;  // ← stream words immediately
         recognition.lang = settings.speechLang;
 
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
+        recognition.onresult = (event: any) => {
             const sock = socketRef.current;
             if (!sock || !roomId) return;
 
@@ -883,7 +883,7 @@ const CallPage: React.FC = () => {
             if (interim) setInterimCaption(interim);
         };
 
-        recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
+        recognition.onerror = (e: any) => {
             console.error('SpeechRecognition error:', e.error);
         };
 
