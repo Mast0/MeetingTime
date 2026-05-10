@@ -36,6 +36,9 @@ export const GuestPage: React.FC = () => {
             token,
             userName: displayName,
             userId: userId,
+            email: '',
+            setUserName: () => {},
+            setEmail: () => {},
             login: () => {}, // No-op for guests
             logout: () => {
                 setToken(null);
