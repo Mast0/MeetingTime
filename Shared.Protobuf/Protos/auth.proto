@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+option csharp_namespace = "Protos";
+
+package auth;
+
+service Auth {
+	rpc Login (LoginRequest) returns (AuthResponse);
+	rpc Register (RegisterRequest) returns (AuthResponse);
+	rpc Validate (ValidateRequest) returns (ValidateResponse);
+	rpc Logout (LogoutRequest) returns (LogoutResponse);
+	rpc GetUser (UserRequest) returns (User);
+	rpc GetUsersByIds (UsersRequest) returns (Users);
+	rpc SearchUsers (SearchUsersRequest) returns (Users);
+	rpc UpdateProfile (UpdateProfileRequest) returns (UpdateProfileResponse);
+	rpc ChangePassword (ChangePasswordRequest) returns (ChangePasswordResponse);
+}
+
+message LoginRequest {
+	string email = 1;
+	string password = 2;
+}
+
+message RegisterRequest {
+	string username = 1;
+	string email = 2;
+	string password = 3;
+}
+
+message AuthResponse {
+	string token = 1;
+	string error = 2;
+}
+
+message ValidateRequest {
+	string token = 1;
+}
+
+message ValidateResponse {
+	bool isValid = 1;
+	string userId = 2;
+	string error  = 3;
+}
+
+message LogoutRequest {
+	string token = 1;
+}
+
+message LogoutResponse {
+	bool success = 1;
+}
+
+message UserRequest {
+	string id = 1;
+}
+
+message User {
+	string id = 1;
+	string userName = 2;
+	string email = 3;
+}
+
+message UsersRequest {
+	repeated string ids = 1;
+}
+
+message Users {
+	repeated User users = 1;
+}
+
+message SearchUsersRequest {
+	string query = 1;
+}
+
+message UpdateProfileRequest {
+	string userId = 1;
+	string newUsername = 2;
+	string newEmail = 3;
+}
+
+message UpdateProfileResponse {
+	bool success = 1;
+	string error = 2;
+}
+
+message ChangePasswordRequest {
+	string userId = 1;
+	string currentPassword = 2;
+	string newPassword = 3;
+}
+
+message ChangePasswordResponse {
+	bool success = 1;
+	string error = 2;
+}

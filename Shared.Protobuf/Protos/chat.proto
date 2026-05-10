@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+option csharp_namespace = "Protos";
+
+package chat;
+
+service Chat {
+	rpc GetMessages (MessagesRequest) returns (MessagesResponse);
+	rpc GetPresence (GetPresenceRequest) returns (GetPresenceResponse);
+}
+
+message MessagesRequest {
+	string RoomId          = 1;
+	int64  BeforeTimestamp = 2; // 0 = fetch latest; otherwise fetch messages older than this unix-ms timestamp
+	int32  PageSize        = 3; // 0 = server default (30)
+}
+
+message Message {
+	string UserId    = 1;
+	string UserName  = 2;
+	string RoomId    = 3;
+	string Text      = 4;
+	int64  Timestamp = 5;
+}
+
+message MessagesResponse {
+	repeated Message messages = 1;
+	bool has_more             = 2; // true when older messages still exist beyond this page
+}
+
+message GetPresenceRequest {
+	repeated string UserIds = 1;
+}
+
+message GetPresenceResponse {
+	repeated string OnlineUserIds = 1;
+}

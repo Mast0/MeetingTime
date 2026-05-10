@@ -1,0 +1,46 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "gen:grpc": "protoc -I=D:/MeetingTime/Shared.Protobuf/Protos D:/MeetingTime/Shared.Protobuf/Protos/chat.proto --plugin=protoc-gen-grpc-web=D:/MeetingTime/frontend/node_modules/protoc-gen-grpc-web/bin/protoc-gen-grpc-web.exe --js_out=import_style=commonjs:src/grpc --grpc-web_out=import_style=typescript,mode=grpcweb:src/grpc"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "@types/node": "^24.0.11",
+    "axios": "^1.10.0",
+    "bootstrap": "^5.3.7",
+    "google-protobuf": "^3.21.4",
+    "grpc-web": "^1.5.0",
+    "jwt-decode": "^4.0.0",
+    "mediasoup-client": "^3.13.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^6.30.1",
+    "socket.io-client": "^4.8.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@types/bootstrap": "^5.2.10",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "eslint": "^9.29.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.2.0",
+    "grpc_tools_node_protoc_ts": "^5.3.3",
+    "grpc-tools": "^1.13.0",
+    "protoc-gen-grpc-web": "^1.5.0",
+    "ts-protoc-gen": "^0.15.0",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.34.1",
+    "vite": "^7.0.0"
+  }
+}

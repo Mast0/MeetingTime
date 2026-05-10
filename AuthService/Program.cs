@@ -1,24 +1,26 @@
-using AuthService.Data;
 using AuthService.Services;
-using Grpc.Core;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Shared.Infrastructure.Extensions;
+using MeetingTime.Domain.Data;
+using Shared.Domain.Entities;
+using Shared.Infrastructure.Logging;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 var services = builder.Services;
 
+builder.AddSerilogLogging("AuthService");
+
 // Add DB connection
-services.AddDbContext<AuthDbContext>(opt =>
-{
-    opt.UseNpgsql(configuration.GetConnectionString("AuthConnection"));
-});
+services.AddSharedInfrastructure(builder.Configuration);
+services.AddRedis(builder.Configuration);
 
 // Add Identity and Role managment
-services.AddIdentity<User, IdentityRole>(opt =>
+services.AddIdentity<UserEntity, IdentityRole>(opt =>
 {
     opt.Password.RequireDigit = true;
     opt.Password.RequireLowercase = true;
@@ -26,7 +28,7 @@ services.AddIdentity<User, IdentityRole>(opt =>
     opt.Password.RequireNonAlphanumeric = false;
     opt.Password.RequiredLength = 8;
 })
-.AddEntityFrameworkStores<AuthDbContext>()
+.AddEntityFrameworkStores<MeetingTimeContext>()
 .AddDefaultTokenProviders();
 
 // Configure JWT Authentication
@@ -64,4 +66,11 @@ var app = builder.Build();
 app.MapGrpcService<AuthGrpcService>();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
-await app.RunAsync();
+try
+{
+    await app.RunAsync();
+}
+finally
+{
+    Log.CloseAndFlush();
+}

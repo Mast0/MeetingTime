@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+option csharp_namespace = "Protos";
+
+package room;
+
+service Room {
+	rpc CreateRoom (CreateRoomRequest) returns (RoomResponse);
+	rpc GetRoom (GetRoomRequest) returns (RoomResponse);
+	rpc GetRooms (Empty) returns (RoomsResponse);
+	rpc UpdateRoom (UpdateRoomRequest) returns (RoomResponse);
+	rpc DeleteRoom (DeleteRoomRequest) returns (Empty);
+
+	// Membership
+	rpc AddRoomMember (AddRoomMemberRequest) returns (RoomMemberResponse);
+	rpc RemoveRoomMember (RemoveRoomMemberRequest) returns (Empty);
+	rpc GetRoomMembers (GetRoomMembersRequest) returns (RoomMembersResponse);
+	rpc GetRoomsByUser (GetRoomsByUserRequest) returns (RoomsResponse);
+
+	// Search
+	rpc SearchPublicRooms (SearchPublicRoomsRequest) returns (RoomsResponse);
+}
+
+message SearchPublicRoomsRequest {
+	string query = 1;
+}
+
+message CreateRoomRequest {
+	string name = 1;
+	int32 maxParticipiants = 2;
+	string password = 3;
+	string creatorUserId = 4;
+}
+
+message GetRoomRequest {
+	string roomId = 1;
+}
+
+message UpdateRoomRequest {
+	string roomId = 1;
+	string name = 2;
+	int32 maxParticipiants = 3;
+	string password = 4;
+}
+
+message DeleteRoomRequest {
+	string roomId = 1;
+}
+
+message RoomResponse {
+	string roomId = 1;
+	string name = 2;
+	int32 maxParticipiants = 3;
+	string password = 4;
+}
+
+message RoomsResponse {
+	repeated RoomResponse rooms = 1;
+}
+
+message Empty {}
+
+// ─── Membership Messages ───
+
+message AddRoomMemberRequest {
+	string roomId = 1;
+	string userId = 2;
+}
+
+message RemoveRoomMemberRequest {
+	string roomId = 1;
+	string userId = 2;
+}
+
+message GetRoomMembersRequest {
+	string roomId = 1;
+}
+
+message GetRoomsByUserRequest {
+	string userId = 1;
+}
+
+message RoomMemberResponse {
+	string roomId = 1;
+	string userId = 2;
+	string role = 3;
+	string joinedAt = 4;
+}
+
+message RoomMembersResponse {
+	repeated RoomMemberResponse members = 1;
+}

@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FuzzySharp" Version="2.0.2" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.57.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.16" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.16" />
@@ -21,11 +22,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Protobuf.Shared\Protobuf.Shared.csproj" />
+    <ProjectReference Include="..\Shared.Domain\Shared.Domain.csproj" />
+    <ProjectReference Include="..\Shared.Infrastructure\Shared.Infrastructure.csproj" />
+    <ProjectReference Include="..\Shared.Protobuf\Shared.Protobuf.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\Protobuf.Shared\Protos\auth.proto" GrpcServices="Both" />
+    <Protobuf Include="..\Shared.Protobuf\Protos\auth.proto" GrpcServices="Both" />
   </ItemGroup>
 
 </Project>
