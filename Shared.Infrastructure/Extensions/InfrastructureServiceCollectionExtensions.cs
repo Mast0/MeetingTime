@@ -12,7 +12,8 @@ public static class InfrastructureServiceCollectionExtensions
     {
         services.AddDbContext<MeetingTimeContext>(opt =>
         {
-            opt.UseNpgsql(configuration.GetConnectionString("DbConnection"));
+            opt.UseNpgsql(configuration.GetConnectionString("DbConnection"),
+                b => b.MigrationsAssembly(typeof(InfrastructureServiceCollectionExtensions).Assembly.FullName));
         });
 
         return services;
