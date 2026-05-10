@@ -12,7 +12,7 @@ handle /ws/chat* {
 
 # Media Service Websockets (Socket.IO)
 handle /socket.io/* {
-    reverse_proxy mediaservice:5000
+    reverse_proxy host.docker.internal:5000
 }
 
 # Frontend
