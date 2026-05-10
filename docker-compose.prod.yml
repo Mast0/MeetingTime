@@ -37,6 +37,16 @@ services:
     image: redis:alpine
     restart: unless-stopped
 
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=MeetingTimeDb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=197314qqq
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
   apigateway:
     build:
       context: .
@@ -65,6 +75,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - Redis__Connection=redis:6379
       - Seq__Url=http://seq:5341
+      - ConnectionStrings__DbConnection=Host=postgres;Port=5432;Database=MeetingTimeDb;Username=postgres;Password=197314qqq
 
   roomservice:
     build:
@@ -78,6 +89,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - Redis__Connection=redis:6379
       - Seq__Url=http://seq:5341
+      - ConnectionStrings__DbConnection=Host=postgres;Port=5432;Database=MeetingTimeDb;Username=postgres;Password=197314qqq
 
   chatservice:
     build:
@@ -91,6 +103,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - Redis__Connection=redis:6379
       - Seq__Url=http://seq:5341
+      - ConnectionStrings__DbConnection=Host=postgres;Port=5432;Database=MeetingTimeDb;Username=postgres;Password=197314qqq
       - Encryption__Key=${ENCRYPTION_KEY:-JBhvgkZlrD0kp+UpnsPSmR2tMPNHnPoc0aLFqp89gYo=}
 
   mediaservice:
@@ -110,3 +123,4 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+  pg_data:

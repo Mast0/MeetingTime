@@ -66,6 +66,22 @@ var app = builder.Build();
 app.MapGrpcService<AuthGrpcService>();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
+using (var scope = app.Services.CreateScope())
+{
+    var servicesScope = scope.ServiceProvider;
+    try
+    {
+        var context = servicesScope.GetRequiredService<MeetingTime.Domain.Data.MeetingTimeContext>();
+        Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AsAsyncEnumerable(context.Users); // dummy access to ensure EF Core is loaded
+        context.Database.Migrate();
+        Log.Information("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "An error occurred while migrating the database.");
+    }
+}
+
 try
 {
     await app.RunAsync();
