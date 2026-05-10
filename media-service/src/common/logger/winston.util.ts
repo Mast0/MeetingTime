@@ -9,7 +9,7 @@ import * as winstonDaily from 'winston-daily-rotate-file';
 // Using require() interop silences the "no construct signatures" TS error
 // while keeping the correct runtime behaviour.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const SeqTransport = require('winston-seq') as new (opts: {
+const SeqTransport = require('winston-seq').Seq as new (opts: {
   serverUrl?: string;
   apiKey?: string;
   onError?: (err: Error) => void;
