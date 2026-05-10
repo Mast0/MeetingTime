@@ -222,3 +222,28 @@
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* ─── Presence Dot ─── */
+.members-sidebar-avatar-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.presence-dot {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--color-bg-sidebar);
+    transition: background-color 0.3s ease;
+}
+
+.presence-dot.online {
+    background-color: #22c55e;
+}
+
+.presence-dot.offline {
+    background-color: #6b7280;
+}

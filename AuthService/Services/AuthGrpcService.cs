@@ -178,6 +178,43 @@ public class AuthGrpcService : Protos.Auth.AuthBase
 
     private static string BlacklistKey(string jti) => $"blacklist:{jti}";
 
+    public override async Task<UpdateProfileResponse> UpdateProfile(UpdateProfileRequest request, ServerCallContext context)
+    {
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        if (user == null)
+            return new UpdateProfileResponse { Success = false, Error = "User not found" };
+
+        if (!string.IsNullOrWhiteSpace(request.NewUsername) && request.NewUsername != user.UserName)
+        {
+            var usernameResult = await _userManager.SetUserNameAsync(user, request.NewUsername);
+            if (!usernameResult.Succeeded)
+                return new UpdateProfileResponse { Success = false, Error = string.Join(", ", usernameResult.Errors.Select(e => e.Description)) };
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.NewEmail) && request.NewEmail != user.Email)
+        {
+            var token = await _userManager.GenerateChangeEmailTokenAsync(user, request.NewEmail);
+            var emailResult = await _userManager.ChangeEmailAsync(user, request.NewEmail, token);
+            if (!emailResult.Succeeded)
+                return new UpdateProfileResponse { Success = false, Error = string.Join(", ", emailResult.Errors.Select(e => e.Description)) };
+        }
+
+        return new UpdateProfileResponse { Success = true };
+    }
+
+    public override async Task<ChangePasswordResponse> ChangePassword(ChangePasswordRequest request, ServerCallContext context)
+    {
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        if (user == null)
+            return new ChangePasswordResponse { Success = false, Error = "User not found" };
+
+        var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+        if (!result.Succeeded)
+            return new ChangePasswordResponse { Success = false, Error = string.Join(", ", result.Errors.Select(e => e.Description)) };
+
+        return new ChangePasswordResponse { Success = true };
+    }
+
     private Task<AuthResponse> GenerateToken(UserEntity user)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");

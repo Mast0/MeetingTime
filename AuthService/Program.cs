@@ -6,10 +6,14 @@ using System.Text;
 using Shared.Infrastructure.Extensions;
 using MeetingTime.Domain.Data;
 using Shared.Domain.Entities;
+using Shared.Infrastructure.Logging;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 var services = builder.Services;
+
+builder.AddSerilogLogging("AuthService");
 
 // Add DB connection
 services.AddSharedInfrastructure(builder.Configuration);
@@ -62,4 +66,11 @@ var app = builder.Build();
 app.MapGrpcService<AuthGrpcService>();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
-await app.RunAsync();
+try
+{
+    await app.RunAsync();
+}
+finally
+{
+    Log.CloseAndFlush();
+}

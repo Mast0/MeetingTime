@@ -4,8 +4,11 @@ using Protos;
 using System.Text;
 using System.Net;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Shared.Infrastructure.Logging;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddSerilogLogging("ApiGateway");
 
 // Jwt Configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -68,6 +71,11 @@ builder.Services.AddAuthentication(opt =>
                 ctx.Fail("Token not found");
                 return;
             }
+
+            // Guest tokens are stateless — skip blacklist validation
+            var roleClaim = ctx.Principal?.FindFirst("role")?.Value;
+            if (string.Equals(roleClaim, "guest", StringComparison.OrdinalIgnoreCase))
+                return;
 
             try
             {
@@ -135,6 +143,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseSerilogRequestLogging();
 app.UseWebSockets();
 app.UseCors("AllowAll");
 app.UseAuthentication();
@@ -143,4 +152,11 @@ app.UseAuthorization();
 app.MapReverseProxy();
 app.MapControllers();
 
-await app.RunAsync();
+try
+{
+    await app.RunAsync();
+}
+finally
+{
+    Log.CloseAndFlush();
+}

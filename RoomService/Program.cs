@@ -5,8 +5,11 @@ using RoomService.Services;
 using Shared.Domain.Entities;
 using Shared.Domain.Interfaces;
 using Shared.Infrastructure.Extensions;
+using Shared.Infrastructure.Logging;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddSerilogLogging("RoomService");
 
 builder.Services.AddSharedInfrastructure(builder.Configuration);
 builder.Services.AddRedis(builder.Configuration);
@@ -31,4 +34,11 @@ var app = builder.Build();
 app.MapGrpcService<RoomGrpcService>();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
-app.Run();
+try
+{
+    app.Run();
+}
+finally
+{
+    Log.CloseAndFlush();
+}

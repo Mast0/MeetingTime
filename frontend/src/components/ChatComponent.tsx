@@ -24,9 +24,11 @@ interface ChatProps {
   onToggleMembers?: () => void;
   onInviteClick?: () => void;
   memberCount?: number;
+  hideCallButton?: boolean;
+  onNewMessage?: (msg: Message) => void;
 }
 
-const ChatComponent: React.FC<ChatProps> = ({ roomId, roomName, onToggleMembers, onInviteClick, memberCount }) => {
+const ChatComponent: React.FC<ChatProps> = ({ roomId, roomName, onToggleMembers, onInviteClick, memberCount, hideCallButton, onNewMessage }) => {
   const { token, userName } = useContext(AuthContext);
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState('');
@@ -44,6 +46,12 @@ const ChatComponent: React.FC<ChatProps> = ({ roomId, roomName, onToggleMembers,
   const initialLoadDone = useRef(false);
   // Set to true right before prepending older messages so auto-scroll is suppressed
   const isPrependRef = useRef(false);
+
+  // Keep a ref to the latest onNewMessage callback to avoid WebSocket reconnects
+  const onNewMessageRef = useRef(onNewMessage);
+  useEffect(() => {
+    onNewMessageRef.current = onNewMessage;
+  }, [onNewMessage]);
 
   const navigate = useNavigate();
 
@@ -184,11 +192,24 @@ const ChatComponent: React.FC<ChatProps> = ({ roomId, roomName, onToggleMembers,
     );
     wsRef.current = ws;
 
+    let heartbeatInterval: ReturnType<typeof setInterval>;
+
     ws.onopen = () => {
       ws.send(JSON.stringify({
         UserId: userId, UserName: userName ?? '', RoomId: roomId,
         Text: "__join__", Timestamp: Date.now(),
       }));
+
+      // Start heartbeat for presence
+      heartbeatInterval = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            Type: "heartbeat",
+            UserId: userId, UserName: userName ?? '', RoomId: roomId,
+            Text: "", Timestamp: Date.now(),
+          }));
+        }
+      }, 30_000);
     };
 
     ws.onmessage = (ev) => {
@@ -196,16 +217,29 @@ const ChatComponent: React.FC<ChatProps> = ({ roomId, roomName, onToggleMembers,
         const msg: Message = JSON.parse(ev.data);
         if (msg.Text !== '__join__') {
           setMessages(prev => [...prev, msg]);
+          if (msg.UserId !== userId) {
+             onNewMessageRef.current?.(msg);
+          }
         }
       } catch (error) {
         console.error("Invalid message", ev.data);
       }
     };
 
-    ws.onclose = () => console.log("Chat socket closed");
-    ws.onerror = (e) => console.error("Chat socket error", e);
+    ws.onclose = () => {
+      console.log("Chat socket closed");
+      clearInterval(heartbeatInterval);
+    };
+    ws.onerror = (e) => {
+      console.error("Chat socket error", e);
+      clearInterval(heartbeatInterval);
+    };
 
-    return () => { ws.close(); wsRef.current = null; };
+    return () => { 
+      clearInterval(heartbeatInterval);
+      ws.close(); 
+      wsRef.current = null; 
+    };
   }, [token, roomId, userId]);
 
   // ── Send ──────────────────────────────────────────────────────────────────
@@ -234,9 +268,11 @@ const ChatComponent: React.FC<ChatProps> = ({ roomId, roomName, onToggleMembers,
               👥 Members{memberCount !== undefined && <span className="chat-member-count">{memberCount}</span>}
             </button>
           )}
-          <button className="call-btn" onClick={() => navigate(`/call/${roomId}`)}>
-            📞 Call
-          </button>
+          {!hideCallButton && (
+            <button className="call-btn" onClick={() => navigate(`/call/${roomId}`)}>
+              📞 Call
+            </button>
+          )}
         </div>
       </div>
 

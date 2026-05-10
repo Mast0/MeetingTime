@@ -176,7 +176,7 @@ const Main: React.FC = () => {
                         onToggleMembers={handleToggleMembers}
                         onInviteClick={handleInviteClick}
                         memberCount={memberCount}
-                      />
+                    />
                     : (
                         <div className="room-empty-state">
                             <div className="room-empty-icon">💬</div>

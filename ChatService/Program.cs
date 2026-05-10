@@ -7,8 +7,11 @@ using Protos;
 using Shared.Domain.Entities;
 using Shared.Domain.Interfaces;
 using Shared.Infrastructure.Extensions;
+using Shared.Infrastructure.Logging;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddSerilogLogging("ChatService");
 
 builder.Services.AddSharedInfrastructure(builder.Configuration);
 builder.Services.AddRedis(builder.Configuration);
@@ -26,6 +29,7 @@ builder.Services.AddIdentity<UserEntity, IdentityRole>(opt =>
 
 builder.Services.AddSingleton<IAesEncryptionService, AesEncryptionService>();
 builder.Services.AddSingleton<IRedisPubSubService, RedisPubSubService>();
+builder.Services.AddSingleton<IPresenceService, PresenceService>();
 builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
 
 builder.Services.AddGrpc();
@@ -43,4 +47,11 @@ app.Map("/ws/chat", ChatWebSocketHandler.Handle);
 
 app.MapGrpcService<ChatGrpcService>();
 
-await app.RunAsync();
+try
+{
+    await app.RunAsync();
+}
+finally
+{
+    Log.CloseAndFlush();
+}

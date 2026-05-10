@@ -6,6 +6,7 @@ package chat;
 
 service Chat {
 	rpc GetMessages (MessagesRequest) returns (MessagesResponse);
+	rpc GetPresence (GetPresenceRequest) returns (GetPresenceResponse);
 }
 
 message MessagesRequest {
@@ -25,4 +26,12 @@ message Message {
 message MessagesResponse {
 	repeated Message messages = 1;
 	bool has_more             = 2; // true when older messages still exist beyond this page
+}
+
+message GetPresenceRequest {
+	repeated string UserIds = 1;
+}
+
+message GetPresenceResponse {
+	repeated string OnlineUserIds = 1;
 }

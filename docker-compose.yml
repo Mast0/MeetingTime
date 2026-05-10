@@ -1,4 +1,13 @@
 services:
+  seq:
+    image: datalust/seq:latest
+    ports:
+      - "5340:80"
+      - "5341:5341"
+    environment:
+      - ACCEPT_EULA=Y
+    restart: unless-stopped
+
   redis:
     image: redis:alpine
     ports:
@@ -16,10 +25,12 @@ services:
       - roomservice
       - chatservice
       - redis
+      - seq
       # - mediaservice
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Redis__Connection=redis:6379
+      - Seq__Url=http://seq:5341
   authservice:
     build:
       context: .
@@ -28,9 +39,11 @@ services:
       - "8001:8080"
     depends_on:
       - redis
+      - seq
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Redis__Connection=redis:6379
+      - Seq__Url=http://seq:5341
   roomservice:
     build:
       context: .
@@ -39,9 +52,11 @@ services:
       - "8002:8080"
     depends_on:
       - redis
+      - seq
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Redis__Connection=redis:6379
+      - Seq__Url=http://seq:5341
   chatservice:
     build:
       context: .
@@ -51,9 +66,11 @@ services:
       - "8004:8081"
     depends_on:
       - redis
+      - seq
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Redis__Connection=redis:6379
+      - Seq__Url=http://seq:5341
       - Encryption__Key=JBhvgkZlrD0kp+UpnsPSmR2tMPNHnPoc0aLFqp89gYo=
   # mediaservice:
   #   build: ./MediaService

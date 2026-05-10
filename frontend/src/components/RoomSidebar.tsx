@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import '../styles/RoomSidebar.css';
 
 interface Room {
@@ -13,10 +14,12 @@ interface Props {
   onSearchClick: () => void;
   width: number;
   activeRoomId?: string;
+  unreadCounts?: Map<string, number>;
 }
 
-const RoomSidebar: React.FC<Props> = ({ rooms, onRoomClick, onAddRoomClick, onSearchClick, width, activeRoomId }) => {
+const RoomSidebar: React.FC<Props> = ({ rooms, onRoomClick, onAddRoomClick, onSearchClick, width, activeRoomId, unreadCounts }) => {
   const [resizeHover, setResizeHover] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div
@@ -43,7 +46,15 @@ const RoomSidebar: React.FC<Props> = ({ rooms, onRoomClick, onAddRoomClick, onSe
             onClick={() => onRoomClick(room.roomId, room.name)}
           >
             <span className="sidebar-room-icon">#</span>
-            {room.name}
+            <span className="sidebar-room-name-text">{room.name}</span>
+            {(() => {
+              const count = unreadCounts?.get(room.roomId) ?? 0;
+              return count > 0 ? (
+                <span className="sidebar-unread-badge">
+                  {count > 99 ? '99+' : count}
+                </span>
+              ) : null;
+            })()}
           </button>
         ))}
 
@@ -66,6 +77,20 @@ const RoomSidebar: React.FC<Props> = ({ rooms, onRoomClick, onAddRoomClick, onSe
         onMouseEnter={() => setResizeHover(true)}
         onMouseLeave={() => setResizeHover(false)}
       />
+
+      {/* Settings button at bottom */}
+      <div style={{ padding: '0.75rem', borderTop: '1px solid var(--color-border)' }}>
+        <button
+          id="sidebar-settings-btn"
+          className="sidebar-room-item"
+          style={{ width: '100%', color: 'var(--color-text-secondary)' }}
+          onClick={() => navigate('/settings')}
+          title="Open settings"
+        >
+          <span className="sidebar-room-icon">⚙️</span>
+          <span>Settings</span>
+        </button>
+      </div>
     </div>
   );
 };

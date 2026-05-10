@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { getRoomMembers, removeRoomMember } from "../api/room";
 import { getUser } from "../api/auth";
+import { getPresence } from "../api/presence";
 import '../styles/MembersSidebar.css';
 
 interface Member {
@@ -23,6 +24,8 @@ const MembersSidebar: React.FC<Props> = ({ roomId, isOpen, onClose, onMembersCha
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
+  const presenceIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchMembers = useCallback(async () => {
     if (!roomId) return;
@@ -31,7 +34,6 @@ const MembersSidebar: React.FC<Props> = ({ roomId, isOpen, onClose, onMembersCha
       const res = await getRoomMembers(roomId);
       const rawMembers: Member[] = res.members || [];
 
-      // Fetch user details for each member
       const enriched = await Promise.all(
         rawMembers.map(async (m) => {
           try {
@@ -44,18 +46,47 @@ const MembersSidebar: React.FC<Props> = ({ roomId, isOpen, onClose, onMembersCha
       );
 
       setMembers(enriched);
+      return enriched;
     } catch (err) {
       console.error("Failed to fetch members:", err);
+      return [];
     } finally {
       setLoading(false);
     }
   }, [roomId]);
 
+  const refreshPresence = useCallback(async (currentMembers: Member[]) => {
+    if (currentMembers.length === 0) return;
+    try {
+      const ids = currentMembers.map(m => m.userId);
+      const online = await getPresence(ids);
+      setOnlineIds(new Set(online));
+    } catch {
+      // Presence is best-effort — silently ignore errors
+    }
+  }, []);
+
   useEffect(() => {
     if (isOpen && roomId) {
-      fetchMembers();
+      fetchMembers().then(enriched => {
+        if (enriched) refreshPresence(enriched);
+      });
+
+      presenceIntervalRef.current = setInterval(() => {
+        setMembers(current => {
+          refreshPresence(current);
+          return current;
+        });
+      }, 15_000);
     }
-  }, [isOpen, roomId, fetchMembers, refreshTrigger]);
+
+    return () => {
+      if (presenceIntervalRef.current) {
+        clearInterval(presenceIntervalRef.current);
+        presenceIntervalRef.current = null;
+      }
+    };
+  }, [isOpen, roomId, fetchMembers, refreshPresence, refreshTrigger]);
 
   const handleRemove = async (userId: string) => {
     setRemovingId(userId);
@@ -99,36 +130,45 @@ const MembersSidebar: React.FC<Props> = ({ roomId, isOpen, onClose, onMembersCha
             </div>
           )}
 
-          {!loading && members.map((member) => (
-            <div key={member.userId} className="members-sidebar-card">
-              <div className="members-sidebar-avatar">
-                {member.userName?.charAt(0).toUpperCase() || '?'}
-              </div>
-              <div className="members-sidebar-info">
-                <div className="members-sidebar-name-row">
-                  <span className="members-sidebar-name">{member.userName}</span>
-                  {member.role === 'owner' && (
-                    <span className="members-sidebar-role-badge">Owner</span>
-                  )}
+          {!loading && members.map((member) => {
+            const isOnline = onlineIds.has(member.userId);
+            return (
+              <div key={member.userId} className="members-sidebar-card">
+                <div className="members-sidebar-avatar-wrap">
+                  <div className="members-sidebar-avatar">
+                    {member.userName?.charAt(0).toUpperCase() || '?'}
+                  </div>
+                  <span
+                    className={`presence-dot ${isOnline ? 'online' : 'offline'}`}
+                    title={isOnline ? 'Online' : 'Offline'}
+                  />
                 </div>
-                <span className="members-sidebar-email">{member.email}</span>
+                <div className="members-sidebar-info">
+                  <div className="members-sidebar-name-row">
+                    <span className="members-sidebar-name">{member.userName}</span>
+                    {member.role === 'owner' && (
+                      <span className="members-sidebar-role-badge">Owner</span>
+                    )}
+                  </div>
+                  <span className="members-sidebar-email">{member.email}</span>
+                </div>
+                {member.role !== 'owner' && (
+                  <button
+                    className="members-sidebar-remove"
+                    onClick={() => handleRemove(member.userId)}
+                    disabled={removingId === member.userId}
+                    title="Remove member"
+                  >
+                    {removingId === member.userId ? (
+                      <div className="members-remove-spinner" />
+                    ) : (
+                      '✕'
+                    )}
+                  </button>
+                )}
               </div>
-              {member.role !== 'owner' && (
-                <button
-                  className="members-sidebar-remove"
-                  onClick={() => handleRemove(member.userId)}
-                  disabled={removingId === member.userId}
-                  title="Remove member"
-                >
-                  {removingId === member.userId ? (
-                    <div className="members-remove-spinner" />
-                  ) : (
-                    '✕'
-                  )}
-                </button>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </>

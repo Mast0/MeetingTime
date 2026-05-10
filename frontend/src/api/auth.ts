@@ -26,3 +26,19 @@ export const searchUsers = async (query: string) => {
     const response = await apiClient.get('/auth/search', { params: { query } });
     return response.data;
 };
+
+export const guestLogin = async (data: { displayName: string; roomId: string }): Promise<{ token: string; displayName: string; guestId: string }> => {
+    const response = await apiClient.post('/auth/guest', data);
+    return response.data;
+};
+
+export const updateProfile = async (data: { username?: string; email?: string }): Promise<void> => {
+    await apiClient.put('/auth/profile', data);
+};
+
+export const changePassword = async (data: { currentPassword: string; newPassword: string }): Promise<void> => {
+    await apiClient.put('/auth/password', {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+    });
+};

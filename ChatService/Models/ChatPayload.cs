@@ -1,7 +1,9 @@
-﻿namespace ChatService.Models
+namespace ChatService.Models
 {
     public class ChatPayload
     {
+        /// <summary>"chat" | "heartbeat"</summary>
+        public string Type { get; set; } = "chat";
         public string UserId { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
         public string RoomId { get; set; } = string.Empty;
@@ -10,10 +12,11 @@
 
         public ChatMessagePayload ToChatMsg() => new()
         {
-            UserId = UserId,
+            Type     = Type,
+            UserId   = UserId,
             UserName = UserName,
-            RoomId = RoomId,
-            Text = Text,
+            RoomId   = RoomId,
+            Text     = Text,
             Timestamp = Timestamp
         };
     }

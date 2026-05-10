@@ -12,6 +12,8 @@ service Auth {
 	rpc GetUser (UserRequest) returns (User);
 	rpc GetUsersByIds (UsersRequest) returns (Users);
 	rpc SearchUsers (SearchUsersRequest) returns (Users);
+	rpc UpdateProfile (UpdateProfileRequest) returns (UpdateProfileResponse);
+	rpc ChangePassword (ChangePasswordRequest) returns (ChangePasswordResponse);
 }
 
 message LoginRequest {
@@ -68,4 +70,26 @@ message Users {
 
 message SearchUsersRequest {
 	string query = 1;
+}
+
+message UpdateProfileRequest {
+	string userId = 1;
+	string newUsername = 2;
+	string newEmail = 3;
+}
+
+message UpdateProfileResponse {
+	bool success = 1;
+	string error = 2;
+}
+
+message ChangePasswordRequest {
+	string userId = 1;
+	string currentPassword = 2;
+	string newPassword = 3;
+}
+
+message ChangePasswordResponse {
+	bool success = 1;
+	string error = 2;
 }

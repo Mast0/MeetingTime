@@ -1,5 +1,10 @@
 import React, { useRef, useEffect, useState } from 'react';
 
+interface ReactionItem {
+    id: string;
+    emoji: string;
+}
+
 interface ParticipantTileProps {
     peerId: string;
     displayName: string;
@@ -7,6 +12,7 @@ interface ParticipantTileProps {
     isSpeaking: boolean;
     videoStream: MediaStream | null;
     audioStream: MediaStream | null;
+    reactions?: ReactionItem[];
 }
 
 // Generate a consistent color from a string
@@ -26,6 +32,7 @@ const ParticipantTile: React.FC<ParticipantTileProps> = ({
     isSpeaking,
     videoStream,
     audioStream,
+    reactions = [],
 }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const audioRef = useRef<HTMLAudioElement>(null);
@@ -71,6 +78,17 @@ const ParticipantTile: React.FC<ParticipantTileProps> = ({
             {/* Hidden audio element for remote peers */}
             {!isLocal && audioStream && (
                 <audio ref={audioRef} autoPlay />
+            )}
+
+            {/* Floating reaction emojis */}
+            {reactions.length > 0 && (
+                <div className="tile-reactions">
+                    {reactions.map((r) => (
+                        <span key={r.id} className="tile-reaction-emoji">
+                            {r.emoji}
+                        </span>
+                    ))}
+                </div>
             )}
 
             {/* Name overlay on hover */}

@@ -6,7 +6,9 @@ import { io, Socket } from "socket.io-client";
 import * as mediasoupClient from "mediasoup-client";
 import type { Consumer, Producer, Transport, TransportOptions } from "mediasoup-client/types";
 import { AuthContext } from "../context/AuthContext";
+import { useUserSettings } from "../context/UserSettingsContext";
 import ParticipantTile from "../components/ParticipantTile";
+import ChatComponent from "../components/ChatComponent";
 
 // ─── Types ───
 
@@ -94,6 +96,33 @@ const CallPage: React.FC = () => {
     const [screenOn, setScreenOn] = useState(false);
     const [speakingPeers, setSpeakingPeers] = useState<Set<string>>(new Set());
     const [localSpeaking, setLocalSpeaking] = useState(false);
+    const [reactions, setReactions] = useState<Map<string, { id: string; emoji: string }[]>>(new Map());
+    const [inviteToast, setInviteToast] = useState(false);
+    const [reactionBarOpen, setReactionBarOpen] = useState(false);
+    const [chatOpen, setChatOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    // ─── Transcription ───
+    const { settings } = useUserSettings();
+    const [transcriptionOn, setTranscriptionOn] = useState(false);
+    const [captions, setCaptions] = useState<{ peerId: string; displayName: string; text: string; id: number }[]>([]);
+    const [interimCaption, setInterimCaption] = useState<string>(''); // live partial text shown while speaking
+    const captionIdRef = useRef(0);
+    const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+    // Clear unread count when chat opens
+    useEffect(() => {
+        if (chatOpen) setUnreadCount(0);
+    }, [chatOpen]);
+
+    const handleNewMessage = useCallback((_msg: any) => {
+        if (!chatOpen) {
+            setUnreadCount(prev => prev + 1);
+        }
+    }, [chatOpen]);
+
+    const REACTION_EMOJIS = ['👍', '❤️', '😂', '🎉', '🔥'];
+    const REACTION_LIFETIME_MS = 3000;
 
     // ─── Refs ───
     const deviceRef = useRef<Device | null>(null);
@@ -225,6 +254,79 @@ const CallPage: React.FC = () => {
         newSocket.on("producer-closed", ({ producerId }: { producerId: string }) => {
             console.log(`Remote producer closed: ${producerId}`);
             removeConsumerByProducerId(producerId);
+        });
+
+        newSocket.on("reaction", ({ peerId, emoji }: { peerId: string; emoji: string }) => {
+            const id = `${peerId}-${Date.now()}-${Math.random()}`;
+            setReactions(prev => {
+                const next = new Map(prev);
+                const existing = next.get(peerId) ?? [];
+                next.set(peerId, [...existing, { id, emoji }]);
+                return next;
+            });
+            setTimeout(() => {
+                setReactions(prev => {
+                    const next = new Map(prev);
+                    const filtered = (next.get(peerId) ?? []).filter(r => r.id !== id);
+                    if (filtered.length > 0) next.set(peerId, filtered);
+                    else next.delete(peerId);
+                    return next;
+                });
+            }, REACTION_LIFETIME_MS);
+        });
+
+        // ─── Transcript relay ───
+        newSocket.on("transcript", ({ peerId, displayName, text, lang }: { peerId: string; displayName: string; text: string; lang: string }) => {
+            // ① Show the caption IMMEDIATELY with the original text — no blocking fetch
+            const captionId = ++captionIdRef.current;
+            setCaptions(prev => [...prev, { peerId, displayName, text, id: captionId }]);
+            const dismissTimer = setTimeout(() => {
+                setCaptions(prev => prev.filter(c => c.id !== captionId));
+            }, 6000);
+
+            // ② Attempt translation in the background and patch the caption when ready
+            const { settings: currentSettings } = (() => {
+                try {
+                    const raw = localStorage.getItem('meetingtime_user_settings');
+                    if (raw) return { settings: JSON.parse(raw) };
+                } catch { /* ignore */ }
+                return { settings: { speechLang: 'en-US', translateTo: '' } };
+            })();
+
+            const targetLang = currentSettings.translateTo ?? '';
+            const sourcePrimary = (lang ?? 'en').split('-')[0].toLowerCase();
+            const targetPrimary = targetLang.toLowerCase();
+
+            console.log(targetLang);
+            console.log(sourcePrimary);
+            console.log(targetPrimary);
+            if (targetLang && sourcePrimary !== targetPrimary) {
+                const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourcePrimary}|${targetPrimary}`;
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        // MyMemory returns responseStatus 200 on success.
+                        // Ignore error messages like "MYMEMORY WARNING: YOU USED ALL AVAILABLE..."
+                        const translated: string | undefined = data?.responseData?.translatedText;
+                        if (
+                            data?.responseStatus === 200 &&
+                            translated &&
+                            !translated.toUpperCase().startsWith('MYMEMORY')
+                        ) {
+                            console.log(translated)
+                            // Patch the existing caption in-place with the translated text
+                            setCaptions(prev =>
+                                prev.map(c => c.id === captionId ? { ...c, text: translated } : c)
+                            );
+                            // Reset dismiss timer so the translated version stays visible
+                            clearTimeout(dismissTimer);
+                            setTimeout(() => {
+                                setCaptions(prev => prev.filter(c => c.id !== captionId));
+                            }, 5000);
+                        }
+                    })
+                    .catch((e) => { console.error(e) });
+            }
         });
 
         return () => {
@@ -677,6 +779,134 @@ const CallPage: React.FC = () => {
         }
     };
 
+    // Send a reaction from the local user
+    const sendReaction = (emoji: string) => {
+        const sock = socketRef.current;
+        if (!sock || !roomId) return;
+
+        // Immediately show on local tile
+        const localId = sock.id ?? 'local';
+        const id = `${localId}-${Date.now()}-${Math.random()}`;
+        setReactions(prev => {
+            const next = new Map(prev);
+            const existing = next.get(localId) ?? [];
+            next.set(localId, [...existing, { id, emoji }]);
+            return next;
+        });
+        setTimeout(() => {
+            setReactions(prev => {
+                const next = new Map(prev);
+                const filtered = (next.get(localId) ?? []).filter(r => r.id !== id);
+                if (filtered.length > 0) next.set(localId, filtered);
+                else next.delete(localId);
+                return next;
+            });
+        }, REACTION_LIFETIME_MS);
+
+        sock.emit('reaction', { roomId, peerId: localId, emoji });
+        setReactionBarOpen(false);
+    };
+
+    // Copy guest invite link to clipboard
+    const handleInvite = async () => {
+        const link = `${window.location.origin}/guest/call/${roomId}`;
+        await navigator.clipboard.writeText(link);
+        setInviteToast(true);
+        setTimeout(() => setInviteToast(false), 2500);
+    };
+
+    // ─── Transcription toggle ───
+    const toggleTranscription = useCallback(() => {
+        if (transcriptionOn) {
+            recognitionRef.current?.stop();
+            recognitionRef.current = null;
+            setTranscriptionOn(false);
+            setInterimCaption('');
+            return;
+        }
+
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert('Speech Recognition is not supported in this browser. Please use Chrome or Edge.');
+            return;
+        }
+
+        const recognition = new SpeechRecognition() as SpeechRecognition;
+        recognition.continuous = true;
+        recognition.interimResults = true;  // ← stream words immediately
+        recognition.lang = settings.speechLang;
+
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
+            const sock = socketRef.current;
+            if (!sock || !roomId) return;
+
+            let interim = '';
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+
+                if (event.results[i].isFinal) {
+                    const text = transcript.trim();
+                    if (!text) continue;
+
+                    // Clear the live interim preview
+                    setInterimCaption('');
+
+                    // Commit to captions list locally
+                    const localId = ++captionIdRef.current;
+                    setCaptions(prev => [...prev, {
+                        peerId: sock.id ?? 'local',
+                        displayName: userName || 'You',
+                        text,
+                        id: localId,
+                    }]);
+                    setTimeout(() => {
+                        setCaptions(prev => prev.filter(c => c.id !== localId));
+                    }, 5000);
+
+                    // Broadcast the final sentence to others
+                    console.log('[CC] emitting transcript to room:', roomId, '| text:', text, '| lang:', settings.speechLang);
+                    sock.emit('transcript', {
+                        roomId,
+                        peerId: sock.id,
+                        displayName: userName || 'You',
+                        text,
+                        lang: settings.speechLang,
+                    });
+                } else {
+                    // Accumulate interim words for the live preview
+                    interim += transcript;
+                }
+            }
+
+            // Update the live typing preview
+            if (interim) setInterimCaption(interim);
+        };
+
+        recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
+            console.error('SpeechRecognition error:', e.error);
+        };
+
+        recognition.onend = () => {
+            // Auto-restart if still enabled (handles browser stopping after silence)
+            if (recognitionRef.current) {
+                recognitionRef.current.start();
+            }
+        };
+
+        recognition.start();
+        recognitionRef.current = recognition;
+        setTranscriptionOn(true);
+    }, [transcriptionOn, roomId, userName, settings.speechLang]);
+
+    // Stop recognition on unmount
+    useEffect(() => {
+        return () => {
+            recognitionRef.current?.stop();
+            recognitionRef.current = null;
+        };
+    }, []);
+
     // ─── Render ───
 
     // Build remote peer tiles
@@ -691,6 +921,7 @@ const CallPage: React.FC = () => {
                 isSpeaking={speakingPeers.has(peerId)}
                 videoStream={media?.videoStream || null}
                 audioStream={media?.audioStream || null}
+                reactions={reactions.get(peerId) ?? []}
             />
         );
     });
@@ -703,6 +934,17 @@ const CallPage: React.FC = () => {
                     {joined ? `Room: ${roomId}` : 'Join a Room'}
                 </h5>
                 <div className="d-flex align-items-center gap-2">
+                    {joined && (
+                        <button
+                            id="invite-guests-btn"
+                            className="ctrl-btn on"
+                            style={{ fontSize: '0.8rem', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            onClick={handleInvite}
+                            title="Copy guest invite link"
+                        >
+                            🔗 Invite
+                        </button>
+                    )}
                     {!joined && (
                         <>
                             <input
@@ -730,48 +972,82 @@ const CallPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* Invite toast */}
+            {inviteToast && (
+                <div className="invite-toast">
+                    ✅ Guest link copied to clipboard!
+                </div>
+            )}
+
             {/* Main content area */}
-            <div className="call-content">
-                {/* Screen share area (separate from grid) */}
-                {joined && screenStream && (
-                    <div className="screen-share-container">
-                        <div className="screen-share-tile">
-                            <video
-                                autoPlay
-                                playsInline
-                                muted
-                                className="tile-video"
-                                ref={(el) => {
-                                    if (el) el.srcObject = screenStream;
-                                }}
-                            />
-                            <div className="tile-name-overlay visible">
-                                <span className="tile-name-text">Your Screen</span>
+            <div className="call-body d-flex flex-grow-1 overflow-hidden" style={{ minHeight: 0 }}>
+                <div className="call-content flex-grow-1 position-relative">
+                    {/* Screen share area (separate from grid) */}
+                    {joined && screenStream && (
+                        <div className="screen-share-container">
+                            <div className="screen-share-tile">
+                                <video
+                                    autoPlay
+                                    playsInline
+                                    muted
+                                    className="tile-video"
+                                    ref={(el) => {
+                                        if (el) el.srcObject = screenStream;
+                                    }}
+                                />
+                                <div className="tile-name-overlay visible">
+                                    <span className="tile-name-text">Your Screen</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
-
-                {/* Participant Grid */}
-                <div className={`participants-grid ${screenStream ? 'with-screen-share' : ''}`}>
-                    {joined && (
-                        <>
-                            {/* Local user tile */}
-                            <ParticipantTile
-                                peerId={socketRef.current?.id || 'local'}
-                                displayName={userName || 'You'}
-                                isLocal={true}
-                                isSpeaking={localSpeaking}
-                                videoStream={localVideoStream}
-                                audioStream={null}
-                            />
-
-                            {/* Remote peer tiles */}
-                            {remoteTiles}
-                        </>
                     )}
+
+                    {/* Participant Grid */}
+                    <div className={`participants-grid ${screenStream ? 'with-screen-share' : ''}`}>
+                        {joined && (
+                            <>
+                                {/* Local user tile */}
+                                <ParticipantTile
+                                    peerId={socketRef.current?.id || 'local'}
+                                    displayName={userName || 'You'}
+                                    isLocal={true}
+                                    isSpeaking={localSpeaking}
+                                    videoStream={localVideoStream}
+                                    audioStream={null}
+                                    reactions={reactions.get(socketRef.current?.id ?? 'local') ?? []}
+                                />
+
+                                {/* Remote peer tiles */}
+                                {remoteTiles}
+                            </>
+                        )}
+                    </div>
+                </div>
+                <div className="call-chat-sidebar" style={{ width: '350px', borderLeft: '1px solid var(--color-border)', display: chatOpen ? 'flex' : 'none', flexDirection: 'column', height: '100%' }}>
+                    <ChatComponent roomId={roomId} roomName={`Room ${roomId}`} hideCallButton={true} onNewMessage={handleNewMessage} />
                 </div>
             </div>
+
+            {/* Captions overlay — shown whenever transcription is on and there's something to display */}
+            {transcriptionOn && (captions.length > 0 || interimCaption) && (
+                <div className="captions-panel" aria-live="polite" aria-label="Live captions">
+                    {/* Committed captions (last 3) */}
+                    {captions.slice(-3).map(c => (
+                        <div key={c.id} className="caption-line">
+                            <span className="caption-speaker">{c.displayName}:</span>
+                            <span className="caption-text">{c.text}</span>
+                        </div>
+                    ))}
+                    {/* Live interim preview — updates word-by-word as you speak */}
+                    {interimCaption && (
+                        <div className="caption-line caption-line--interim">
+                            <span className="caption-speaker">{userName || 'You'}:</span>
+                            <span className="caption-text caption-text--interim">{interimCaption}</span>
+                        </div>
+                    )}
+                </div>
+            )}
+
 
             {/* Controls */}
             {joined && (
@@ -806,6 +1082,62 @@ const CallPage: React.FC = () => {
                         </button>
                         <span className="ctrl-label">{screenOn ? 'Stop' : 'Share'}</span>
                     </div>
+
+                    <div className="ctrl-wrapper">
+                        <button
+                            className={`ctrl-btn ${chatOpen ? 'on' : 'off'} position-relative`}
+                            onClick={() => setChatOpen(o => !o)}
+                            title={chatOpen ? 'Close chat' : 'Open chat'}
+                        >
+                            💬
+                            {unreadCount > 0 && (
+                                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.65rem' }}>
+                                    {unreadCount}
+                                </span>
+                            )}
+                        </button>
+                        <span className="ctrl-label">Chat</span>
+                    </div>
+
+                    {/* Reaction bar */}
+                    <div className="ctrl-wrapper reaction-wrapper">
+                        <button
+                            id="reaction-bar-btn"
+                            className={`ctrl-btn ${reactionBarOpen ? 'on' : 'off'}`}
+                            onClick={() => setReactionBarOpen(o => !o)}
+                            title="Send reaction"
+                        >
+                            😊
+                        </button>
+                        <span className="ctrl-label">React</span>
+                        {reactionBarOpen && (
+                            <div className="reaction-picker">
+                                {REACTION_EMOJIS.map(emoji => (
+                                    <button
+                                        key={emoji}
+                                        className="reaction-btn"
+                                        onClick={() => sendReaction(emoji)}
+                                        title={emoji}
+                                    >
+                                        {emoji}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="ctrl-wrapper">
+                        <button
+                            id="transcription-toggle-btn"
+                            className={`ctrl-btn ${transcriptionOn ? 'on' : 'off'}`}
+                            onClick={toggleTranscription}
+                            title={transcriptionOn ? 'Stop captions' : 'Enable live captions'}
+                        >
+                            CC
+                        </button>
+                        <span className="ctrl-label">{transcriptionOn ? 'CC On' : 'Captions'}</span>
+                    </div>
+
                     <div className="ctrl-wrapper">
                         <button
                             className="ctrl-btn end-call"

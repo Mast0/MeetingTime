@@ -30,6 +30,7 @@ public static class ChatWebSocketHandler
 
         var ws     = await ctx.WebSockets.AcceptWebSocketAsync();
         string roomId = null!;
+        string userId = null!;
 
         try
         {
@@ -41,20 +42,34 @@ public static class ChatWebSocketHandler
             var text   = Encoding.UTF8.GetString(buffer, 0, result.Count);
             var join   = JsonSerializer.Deserialize<JoinMessage>(text, JsonOpt)!;
             roomId     = join.RoomId;
+            userId     = join.UserId;
 
-            var repo       = ctx.RequestServices.GetRequiredService<IChatMessageRepository>();
+            var repo      = ctx.RequestServices.GetRequiredService<IChatMessageRepository>();
             var encryption = ctx.RequestServices.GetRequiredService<IAesEncryptionService>();
-            var pubSub     = ctx.RequestServices.GetRequiredService<IRedisPubSubService>();
+            var pubSub    = ctx.RequestServices.GetRequiredService<IRedisPubSubService>();
+            var presence  = ctx.RequestServices.GetRequiredService<IPresenceService>();
 
             // Register socket in the local room bucket
-            var bag = _rooms.GetOrAdd(roomId, _ => new());
+            var newBag = new ConcurrentDictionary<WebSocket, byte>();
+            var bag = _rooms.GetOrAdd(roomId, newBag);
+            bool isFirst = ReferenceEquals(bag, newBag);
+            
             bag.TryAdd(ws, 1);
 
-            // Subscribe to Redis channel (idempotent — SE.Redis deduplicates)
-            await pubSub.SubscribeAsync(roomId, async payload =>
+            // Mark user as online
+            await presence.SetOnlineAsync(userId);
+
+            // Only subscribe to Redis if this is the first local connection for this room
+            if (isFirst)
             {
-                await SendToLocalSocketsAsync(payload, bag);
-            });
+                await pubSub.SubscribeAsync(roomId, async payload =>
+                {
+                    if (_rooms.TryGetValue(roomId, out var currentBag))
+                    {
+                        await SendToLocalSocketsAsync(payload, currentBag);
+                    }
+                });
+            }
 
             // Broadcast join notification via Redis (reaches all instances)
             await pubSub.PublishAsync(roomId, join.ToChatMsg());
@@ -67,6 +82,14 @@ public static class ChatWebSocketHandler
 
                 text       = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 var chat   = JsonSerializer.Deserialize<ChatPayload>(text, JsonOpt)!;
+
+                // Heartbeat: refresh TTL, do NOT broadcast or persist
+                if (string.Equals(chat.Type, "heartbeat", StringComparison.OrdinalIgnoreCase))
+                {
+                    await presence.SetOnlineAsync(userId);
+                    continue;
+                }
+
                 var chatMsg = chat.ToChatMsg();
 
                 // Persist encrypted message, invalidate cache, then publish plaintext via Redis
@@ -82,6 +105,8 @@ public static class ChatWebSocketHandler
                 await pubSub.UnsubscribeAsync(roomId);
             }
 
+            await presence.SetOfflineAsync(userId);
+
             await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed", CancellationToken.None);
         }
         catch (Exception)
@@ -92,6 +117,12 @@ public static class ChatWebSocketHandler
                 bag.TryRemove(ws, out _);
                 if (bag.IsEmpty)
                     _rooms.TryRemove(roomId, out _);
+            }
+
+            if (userId != null)
+            {
+                var presence = ctx.RequestServices.GetService<IPresenceService>();
+                if (presence != null) await presence.SetOfflineAsync(userId);
             }
         }
     }

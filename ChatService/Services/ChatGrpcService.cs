@@ -13,15 +13,18 @@ public class ChatGrpcService : ChatBase
     private readonly IChatMessageRepository _repo;
     private readonly Auth.AuthClient _authClient;
     private readonly IAesEncryptionService _encryption;
+    private readonly IPresenceService _presence;
 
     public ChatGrpcService(
         IChatMessageRepository repo,
         Auth.AuthClient authClient,
-        IAesEncryptionService encryption)
+        IAesEncryptionService encryption,
+        IPresenceService presence)
     {
         _repo       = repo;
         _authClient = authClient;
         _encryption = encryption;
+        _presence   = presence;
     }
 
     public override async Task<MessagesResponse> GetMessages(MessagesRequest request, ServerCallContext context)
@@ -74,5 +77,15 @@ public class ChatGrpcService : ChatBase
         var response = new MessagesResponse { HasMore = hasMore };
         response.Messages.AddRange(messages);
         return response;
+    }
+
+    public override async Task<GetPresenceResponse> GetPresence(
+        GetPresenceRequest request,
+        ServerCallContext context)
+    {
+        var onlineIds = await _presence.GetOnlineUsersAsync(request.UserIds);
+        var resp = new GetPresenceResponse();
+        resp.OnlineUserIds.AddRange(onlineIds);
+        return resp;
     }
 }

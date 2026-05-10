@@ -7,8 +7,11 @@ interface AuthContextType {
     token: string | null;
     userName: string | null;
     userId: string | null;
+    email: string | null;
     login: (token: string) => void;
     logout: () => void;
+    setUserName: (name: string) => void;
+    setEmail: (email: string) => void;
 }
 
 interface TokenPayload {
@@ -21,8 +24,11 @@ export const AuthContext = createContext<AuthContextType>({
     token: null,
     userName: null,
     userId: null,
+    email: null,
     login: () => { },
     logout: () => { },
+    setUserName: () => { },
+    setEmail: () => { },
 });
 
 function isTokenExpired(token: string): boolean {
@@ -57,6 +63,7 @@ function getUserIdFromToken(token: string | null): string | null {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [token, setToken] = useState<string | null>(getStoredToken);
     const [userName, setUserName] = useState<string | null>(localStorage.getItem('userName'));
+    const [email, setEmail] = useState<string | null>(localStorage.getItem('userEmail'));
     const userId = getUserIdFromToken(token);
     const navigate = useNavigate();
 
@@ -67,7 +74,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
             localStorage.removeItem('token');
             localStorage.removeItem('userName');
+            localStorage.removeItem('userEmail');
             setUserName(null);
+            setEmail(null);
         }
     }, [token]);
 
@@ -78,6 +87,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, [userName]);
 
+    // Sync email to localStorage
+    useEffect(() => {
+        if (email) {
+            localStorage.setItem('userEmail', email);
+        }
+    }, [email]);
+
     const login = useCallback(async (newToken: string) => {
         setToken(newToken);
 
@@ -85,6 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const payload = jwtDecode<TokenPayload>(newToken);
             const user = await getUserWithToken({ id: payload.sub }, newToken);
             setUserName(user.userName);
+            setEmail(user.email ?? null);
         } catch (err) {
             console.error('Get user name error', err);
             setUserName(null);
@@ -99,7 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [navigate]);
 
     return (
-        <AuthContext.Provider value={{ token, userName, userId, login, logout }}>
+        <AuthContext.Provider value={{ token, userName, userId, email, login, logout, setUserName, setEmail }}>
             {children}
         </AuthContext.Provider>
     );
