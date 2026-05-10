@@ -11,6 +11,8 @@ services:
       - caddy_config:/config
     environment:
       - DOMAIN=${DOMAIN}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - frontend
       - apigateway
