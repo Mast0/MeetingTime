@@ -5,15 +5,7 @@ import {
 } from 'nest-winston';
 import * as winstonDaily from 'winston-daily-rotate-file';
 
-// winston-seq ships Winston v2-era typings that don't match v3.
-// Using require() interop silences the "no construct signatures" TS error
-// while keeping the correct runtime behaviour.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const SeqTransport = require('winston-seq').Seq as new (opts: {
-  serverUrl?: string;
-  apiKey?: string;
-  onError?: (err: Error) => void;
-}) => winston.transport;
+import { SeqTransport } from '@datalust/winston-seq';
 
 const SERVICE_NAME = 'media-service';
 
