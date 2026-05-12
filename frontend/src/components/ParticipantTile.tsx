@@ -13,6 +13,8 @@ interface ParticipantTileProps {
     videoStream: MediaStream | null;
     audioStream: MediaStream | null;
     reactions?: ReactionItem[];
+    isPinned?: boolean;
+    onPin?: (peerId: string) => void;
 }
 
 // Generate a consistent color from a string
@@ -33,6 +35,8 @@ const ParticipantTile: React.FC<ParticipantTileProps> = ({
     videoStream,
     audioStream,
     reactions = [],
+    isPinned = false,
+    onPin,
 }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const audioRef = useRef<HTMLAudioElement>(null);
@@ -57,7 +61,7 @@ const ParticipantTile: React.FC<ParticipantTileProps> = ({
 
     return (
         <div
-            className={`participant-tile ${isSpeaking ? 'speaking' : ''} ${isLocal ? 'is-local' : ''}`}
+            className={`participant-tile ${isSpeaking ? 'speaking' : ''} ${isLocal ? 'is-local' : ''} ${isPinned ? 'is-pinned' : ''}`}
             onMouseEnter={() => setShowName(true)}
             onMouseLeave={() => setShowName(false)}
         >
@@ -89,6 +93,20 @@ const ParticipantTile: React.FC<ParticipantTileProps> = ({
                         </span>
                     ))}
                 </div>
+            )}
+
+            {/* Pin button on hover or always if pinned */}
+            {(showName || isPinned) && onPin && (
+                <button 
+                    className={`tile-pin-btn ${isPinned ? 'active' : ''}`}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onPin(peerId);
+                    }}
+                    title={isPinned ? "Unpin" : "Pin"}
+                >
+                    📌
+                </button>
             )}
 
             {/* Name overlay on hover */}
