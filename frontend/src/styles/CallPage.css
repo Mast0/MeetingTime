@@ -471,3 +471,49 @@
     font-weight: 700;
     letter-spacing: 0.05em;
 }
+
+/* ─── Mobile Responsiveness ─── */
+@media (max-width: 768px) {
+    .participants-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px;
+        padding: 8px;
+        align-content: start;
+    }
+    
+    .participants-grid:has(.participant-tile:only-child) {
+        grid-template-columns: 1fr !important;
+        align-content: center;
+    }
+    
+    .participant-tile {
+        aspect-ratio: 3 / 4; /* Portrait oriented cards fit better in columns on mobile */
+        min-height: 120px;
+        border-radius: 8px;
+    }
+    
+    .tile-avatar {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .tile-avatar-letter {
+        font-size: 24px;
+    }
+    
+    /* Smaller controls to fit screen width */
+    .call-controls {
+        padding: 8px 4px !important;
+    }
+    
+    .call-controls .ctrl-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 16px;
+    }
+    
+    .ctrl-btn.end-call {
+        width: 44px;
+        height: 44px;
+    }
+}
