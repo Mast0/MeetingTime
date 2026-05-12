@@ -8,7 +8,7 @@ import type { Consumer, Producer, Transport, TransportOptions } from "mediasoup-
 import { AuthContext } from "../context/AuthContext";
 import ParticipantTile from "../components/ParticipantTile";
 import ChatComponent from "../components/ChatComponent";
-import { getRoomById } from '../api/room';
+import { getRoomBasicInfo } from '../api/room';
 
 // ─── Types ───
 
@@ -77,7 +77,7 @@ function createSpeakingDetector(
 const CallPage: React.FC = () => {
     const { roomId: urlRoomId } = useParams<{ roomId: string }>();
     const navigate = useNavigate();
-    const { token, userName, userId } = useContext(AuthContext);
+    const { userName, userId } = useContext(AuthContext);
 
     // ─── State ───
     const [socket, setSocket] = useState<Socket | null>(null);
@@ -114,7 +114,7 @@ const CallPage: React.FC = () => {
     // Fetch room details on load
     useEffect(() => {
         if (roomId) {
-            getRoomById(roomId, token ?? undefined)
+            getRoomBasicInfo(roomId)
                 .then(data => {
                     if (data && data.name) {
                         setRoomName(data.name);
@@ -122,7 +122,7 @@ const CallPage: React.FC = () => {
                 })
                 .catch(err => console.error("Failed to fetch room details:", err));
         }
-    }, [roomId, token]);
+    }, [roomId]);
     const [reactionBarOpen, setReactionBarOpen] = useState(false);
     const [chatOpen, setChatOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
