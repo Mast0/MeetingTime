@@ -98,6 +98,17 @@ const CallPage: React.FC = () => {
     const [localSpeaking, setLocalSpeaking] = useState(false);
     const [reactions, setReactions] = useState<Map<string, { id: string; emoji: string }[]>>(new Map());
     const [inviteToast, setInviteToast] = useState(false);
+    
+    // New UX State
+    const [pinnedPeerId, setPinnedPeerId] = useState<string | null>(null);
+    const [mobilePage, setMobilePage] = useState<number>(0);
+    const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
     const [reactionBarOpen, setReactionBarOpen] = useState(false);
     const [chatOpen, setChatOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -909,22 +920,56 @@ const CallPage: React.FC = () => {
 
     // ─── Render ───
 
-    // Build remote peer tiles
-    const remoteTiles = Array.from(peers.entries()).map(([peerId, info]) => {
-        const media = peerMedia.get(peerId);
-        return (
-            <ParticipantTile
-                key={peerId}
-                peerId={peerId}
-                displayName={info.displayName}
-                isLocal={false}
-                isSpeaking={speakingPeers.has(peerId)}
-                videoStream={media?.videoStream || null}
-                audioStream={media?.audioStream || null}
-                reactions={reactions.get(peerId) ?? []}
-            />
-        );
-    });
+    // ─── Render Logic ───
+
+    // Combine local user + remote peers into one array for easier pagination/pinning logic
+    const allParticipants = [
+        {
+            peerId: socketRef.current?.id || 'local',
+            displayName: userName || 'You',
+            isLocal: true,
+            isSpeaking: localSpeaking,
+            videoStream: localVideoStream,
+            audioStream: null,
+            reactions: reactions.get(socketRef.current?.id ?? 'local') ?? []
+        },
+        ...Array.from(peers.entries()).map(([peerId, info]) => {
+            const media = peerMedia.get(peerId);
+            return {
+                peerId,
+                displayName: info.displayName,
+                isLocal: false,
+                isSpeaking: speakingPeers.has(peerId),
+                videoStream: media?.videoStream || null,
+                audioStream: media?.audioStream || null,
+                reactions: reactions.get(peerId) ?? []
+            };
+        })
+    ];
+
+    // Handle Pinning
+    const handlePin = (id: string) => {
+        setPinnedPeerId(prev => prev === id ? null : id);
+    };
+
+    // Split out pinned participant
+    const pinnedParticipant = pinnedPeerId ? allParticipants.find(p => p.peerId === pinnedPeerId) : null;
+    const gridParticipants = pinnedParticipant 
+        ? allParticipants.filter(p => p.peerId !== pinnedPeerId)
+        : allParticipants;
+
+    // Handle Pagination on Mobile
+    const PAGE_SIZE = 6;
+    const totalPages = Math.ceil(gridParticipants.length / PAGE_SIZE);
+    
+    // Ensure mobilePage is valid if participants drop
+    if (mobilePage >= totalPages && totalPages > 0) {
+        setMobilePage(totalPages - 1);
+    }
+
+    const visibleGridParticipants = isMobile 
+        ? gridParticipants.slice(mobilePage * PAGE_SIZE, (mobilePage + 1) * PAGE_SIZE)
+        : gridParticipants;
 
     return (
         <div className="call-page d-flex flex-column vh-100 text-white">
@@ -982,46 +1027,68 @@ const CallPage: React.FC = () => {
             {/* Main content area */}
             <div className="call-body d-flex flex-grow-1 overflow-hidden" style={{ minHeight: 0 }}>
                 <div className="call-content flex-grow-1 position-relative">
-                    {/* Screen share area (separate from grid) */}
-                    {joined && screenStream && (
+                    {/* Screen share area OR Pinned Peer */}
+                    {joined && (screenStream || pinnedParticipant) && (
                         <div className="screen-share-container">
                             <div className="screen-share-tile">
-                                <video
-                                    autoPlay
-                                    playsInline
-                                    muted
-                                    className="tile-video"
-                                    ref={(el) => {
-                                        if (el) el.srcObject = screenStream;
-                                    }}
-                                />
-                                <div className="tile-name-overlay visible">
-                                    <span className="tile-name-text">Your Screen</span>
-                                </div>
+                                {screenStream ? (
+                                    <>
+                                        <video
+                                            autoPlay
+                                            playsInline
+                                            muted
+                                            className="tile-video"
+                                            ref={(el) => {
+                                                if (el) el.srcObject = screenStream;
+                                            }}
+                                        />
+                                        <div className="tile-name-overlay visible">
+                                            <span className="tile-name-text">Your Screen</span>
+                                        </div>
+                                    </>
+                                ) : pinnedParticipant ? (
+                                    <ParticipantTile 
+                                        {...pinnedParticipant} 
+                                        isPinned={true} 
+                                        onPin={handlePin}
+                                    />
+                                ) : null}
                             </div>
                         </div>
                     )}
 
                     {/* Participant Grid */}
-                    <div className={`participants-grid ${screenStream ? 'with-screen-share' : ''}`}>
-                        {joined && (
-                            <>
-                                {/* Local user tile */}
-                                <ParticipantTile
-                                    peerId={socketRef.current?.id || 'local'}
-                                    displayName={userName || 'You'}
-                                    isLocal={true}
-                                    isSpeaking={localSpeaking}
-                                    videoStream={localVideoStream}
-                                    audioStream={null}
-                                    reactions={reactions.get(socketRef.current?.id ?? 'local') ?? []}
-                                />
-
-                                {/* Remote peer tiles */}
-                                {remoteTiles}
-                            </>
-                        )}
+                    <div className={`participants-grid ${(screenStream || pinnedParticipant) ? 'with-screen-share' : ''}`}>
+                        {joined && visibleGridParticipants.map(p => (
+                            <ParticipantTile
+                                key={p.peerId}
+                                {...p}
+                                isPinned={false}
+                                onPin={handlePin}
+                            />
+                        ))}
                     </div>
+
+                    {/* Mobile Pagination Controls */}
+                    {joined && isMobile && totalPages > 1 && (
+                        <div className="mobile-pagination-controls d-flex justify-content-center align-items-center gap-3 p-2">
+                            <button 
+                                className="btn btn-sm btn-outline-light" 
+                                disabled={mobilePage === 0}
+                                onClick={() => setMobilePage(p => p - 1)}
+                            >
+                                ◀ Prev
+                            </button>
+                            <span style={{ fontSize: '0.85rem' }}>Page {mobilePage + 1} of {totalPages}</span>
+                            <button 
+                                className="btn btn-sm btn-outline-light" 
+                                disabled={mobilePage === totalPages - 1}
+                                onClick={() => setMobilePage(p => p + 1)}
+                            >
+                                Next ▶
+                            </button>
+                        </div>
+                    )}
                 </div>
                 <div className="call-chat-sidebar" style={{ width: '350px', borderLeft: '1px solid var(--color-border)', display: chatOpen ? 'flex' : 'none', flexDirection: 'column', height: '100%' }}>
                     <ChatComponent roomId={roomId} roomName={`Room ${roomId}`} hideCallButton={true} onNewMessage={handleNewMessage} />
