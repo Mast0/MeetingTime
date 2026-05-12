@@ -68,7 +68,7 @@ export class SignalingGateway
                     room.peers.delete(peerId);
                 }
                 client.leave(roomId);
-                client.to(roomId).emit('peer-left', { peerId });
+                this.server.to(roomId).emit('peer-left', { peerId });
                 if (room.peers.size === 0) {
                     this.roomService.removeRoom(roomId);
                 }
@@ -93,7 +93,7 @@ export class SignalingGateway
             const evictedPeerId = this.roomService.evictPeerByUserId(roomId, userId || '', peerId);
             if (evictedPeerId) {
                 // Notify others that the old peer is gone
-                client.to(roomId).emit('peer-left', { peerId: evictedPeerId });
+                this.server.to(roomId).emit('peer-left', { peerId: evictedPeerId });
             }
 
             this.roomService.addPeerToRoom(roomId, peerId, displayName || 'Guest', userId || '');

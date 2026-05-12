@@ -1,5 +1,6 @@
 .call-page {
     height: 100vh;
+    height: 100dvh; /* Fixes mobile browser bottom bar pushing controls off screen */
     background: #1a1a2e;
     font-family: 'Segoe UI', 'Roboto', sans-serif;
 }
@@ -476,8 +477,8 @@
 @media (max-width: 768px) {
     .participants-grid {
         grid-template-columns: repeat(2, 1fr) !important;
-        gap: 8px;
-        padding: 8px;
+        gap: 6px;
+        padding: 6px;
         align-content: start;
     }
     
@@ -487,33 +488,35 @@
     }
     
     .participant-tile {
-        aspect-ratio: 3 / 4; /* Portrait oriented cards fit better in columns on mobile */
-        min-height: 120px;
+        aspect-ratio: 1; /* Square cards fit much better vertically on mobile */
+        min-height: 100px;
         border-radius: 8px;
     }
     
     .tile-avatar {
-        width: 56px;
-        height: 56px;
+        width: 48px;
+        height: 48px;
     }
     
     .tile-avatar-letter {
-        font-size: 24px;
+        font-size: 20px;
     }
     
     /* Smaller controls to fit screen width */
     .call-controls {
         padding: 8px 4px !important;
+        gap: 8px !important;
+        flex-wrap: wrap; /* Wrap buttons if screen is very narrow */
     }
     
     .call-controls .ctrl-btn {
-        width: 44px;
-        height: 44px;
-        font-size: 16px;
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
     }
     
     .ctrl-btn.end-call {
-        width: 44px;
-        height: 44px;
+        width: 40px;
+        height: 40px;
     }
 }
