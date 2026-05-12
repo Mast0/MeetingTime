@@ -16,36 +16,36 @@ function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
-          <Routes>
-            <Route path='/login' element={<Login />} />
-            <Route path='/register' element={<Register />} />
-            <Route
-              path='/'
-              element={
-                <ProtectedRoute>
-                  <Main />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path='call/:roomId'
-              element={
-                <ProtectedRoute>
-                  <CallPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path='settings'
-              element={
-                <ProtectedRoute>
-                  <SettingsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route path='guest/call/:roomId' element={<GuestPage />} />
-            <Route path='*' element={<Navigate to='/' replace />} />
-          </Routes>
+        <Routes>
+          <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Register />} />
+          <Route
+            path='/'
+            element={
+              <ProtectedRoute>
+                <Main />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='call/:roomId'
+            element={
+              <ProtectedRoute>
+                <CallPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='settings'
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path='guest/call/:roomId' element={<GuestPage />} />
+          <Route path='*' element={<Navigate to='/' replace />} />
+        </Routes>
       </AuthProvider>
     </BrowserRouter>
   )
