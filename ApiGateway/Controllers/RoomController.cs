@@ -45,7 +45,7 @@ public class RoomController : ControllerBase
             var res = await _roomClient.GetRoomAsync(new GetRoomRequest { RoomId = roomId });
             return Ok(new { name = res.Name });
         }
-        catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+        catch (RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.NotFound)
         {
             return NotFound();
         }
