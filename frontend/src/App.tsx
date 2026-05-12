@@ -1,7 +1,6 @@
 import './App.css'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
-import { UserSettingsProvider } from './context/UserSettingsContext'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Main from './pages/Main'
@@ -17,7 +16,6 @@ function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
-        <UserSettingsProvider>
           <Routes>
             <Route path='/login' element={<Login />} />
             <Route path='/register' element={<Register />} />
@@ -48,7 +46,6 @@ function App() {
             <Route path='guest/call/:roomId' element={<GuestPage />} />
             <Route path='*' element={<Navigate to='/' replace />} />
           </Routes>
-        </UserSettingsProvider>
       </AuthProvider>
     </BrowserRouter>
   )

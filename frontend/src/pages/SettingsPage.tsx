@@ -1,50 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { useUserSettings } from '../context/UserSettingsContext';
-import { updateProfile, changePassword } from '../api/auth';
-import '../styles/SettingsPage.css';
-
-// ─── Language lists ───
-
-const SPEECH_LANGUAGES = [
-    { value: 'en-US', label: '🇺🇸 English (US)' },
-    { value: 'en-GB', label: '🇬🇧 English (UK)' },
-    { value: 'uk-UA', label: '🇺🇦 Ukrainian' },
-    { value: 'de-DE', label: '🇩🇪 German' },
-    { value: 'fr-FR', label: '🇫🇷 French' },
-    { value: 'es-ES', label: '🇪🇸 Spanish' },
-    { value: 'it-IT', label: '🇮🇹 Italian' },
-    { value: 'pl-PL', label: '🇵🇱 Polish' },
-    { value: 'pt-PT', label: '🇵🇹 Portuguese' },
-    { value: 'ru-RU', label: '🇷🇺 Russian' },
-    { value: 'zh-CN', label: '🇨🇳 Chinese (Simplified)' },
-    { value: 'ja-JP', label: '🇯🇵 Japanese' },
-    { value: 'ko-KR', label: '🇰🇷 Korean' },
-    { value: 'ar-SA', label: '🇸🇦 Arabic' },
-    { value: 'hi-IN', label: '🇮🇳 Hindi' },
-    { value: 'tr-TR', label: '🇹🇷 Turkish' },
-];
-
-const TRANSLATE_LANGUAGES = [
-    { value: '',   label: '— No translation —' },
-    { value: 'en', label: '🇺🇸 English' },
-    { value: 'uk', label: '🇺🇦 Ukrainian' },
-    { value: 'de', label: '🇩🇪 German' },
-    { value: 'fr', label: '🇫🇷 French' },
-    { value: 'es', label: '🇪🇸 Spanish' },
-    { value: 'it', label: '🇮🇹 Italian' },
-    { value: 'pl', label: '🇵🇱 Polish' },
-    { value: 'pt', label: '🇵🇹 Portuguese' },
-    { value: 'ru', label: '🇷🇺 Russian' },
-    { value: 'zh', label: '🇨🇳 Chinese' },
-    { value: 'ja', label: '🇯🇵 Japanese' },
-    { value: 'ko', label: '🇰🇷 Korean' },
-    { value: 'ar', label: '🇸🇦 Arabic' },
-    { value: 'hi', label: '🇮🇳 Hindi' },
-    { value: 'tr', label: '🇹🇷 Turkish' },
-];
-
 // ─── Feedback state helper ───
 
 type FeedbackState = { kind: 'success' | 'error'; message: string } | null;
@@ -52,10 +8,9 @@ type FeedbackState = { kind: 'success' | 'error'; message: string } | null;
 const SettingsPage: React.FC = () => {
     const navigate = useNavigate();
     const { userName, email, setUserName, setEmail } = useContext(AuthContext);
-    const { settings, updateSettings } = useUserSettings();
 
     // ─── Active section ───
-    const [activeSection, setActiveSection] = useState<'profile' | 'security' | 'call'>('profile');
+    const [activeSection, setActiveSection] = useState<'profile' | 'security'>('profile');
 
     // ─── Profile form ───
     const [newUsername, setNewUsername] = useState(userName ?? '');
@@ -69,10 +24,6 @@ const SettingsPage: React.FC = () => {
     const [confirmPwd, setConfirmPwd]     = useState('');
     const [securityLoading, setSecurityLoading] = useState(false);
     const [securityFeedback, setSecurityFeedback] = useState<FeedbackState>(null);
-
-    // ─── Call prefs form ───
-    const [speechLang, setSpeechLang]   = useState(settings.speechLang);
-    const [translateTo, setTranslateTo] = useState(settings.translateTo);
 
     // ─── Handlers ───
 
@@ -122,12 +73,6 @@ const SettingsPage: React.FC = () => {
         }
     };
 
-    const handleCallPrefsSave = (e: React.FormEvent) => {
-        e.preventDefault();
-        updateSettings({ speechLang, translateTo });
-        // small visual confirmation via console (we show inline update)
-    };
-
     // ─── Render ───
 
     return (
@@ -156,13 +101,6 @@ const SettingsPage: React.FC = () => {
                         onClick={() => setActiveSection('security')}
                     >
                         <span className="settings-nav-icon">🔒</span> Security
-                    </button>
-                    <button
-                        id="settings-nav-call"
-                        className={`settings-nav-btn ${activeSection === 'call' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('call')}
-                    >
-                        <span className="settings-nav-icon">🎙️</span> Call &amp; Captions
                     </button>
                 </nav>
 
@@ -282,62 +220,6 @@ const SettingsPage: React.FC = () => {
                         </div>
                     )}
 
-                    {/* ── Call & Captions ── */}
-                    {activeSection === 'call' && (
-                        <div className="settings-card">
-                            <h2 className="settings-card-title">🎙️ Call &amp; Captions</h2>
-                            <form onSubmit={handleCallPrefsSave}>
-                                <div className="settings-field">
-                                    <label className="settings-label" htmlFor="settings-speech-lang">
-                                        Speech recognition language
-                                    </label>
-                                    <select
-                                        id="settings-speech-lang"
-                                        className="settings-select"
-                                        value={speechLang}
-                                        onChange={e => setSpeechLang(e.target.value)}
-                                    >
-                                        {SPEECH_LANGUAGES.map(l => (
-                                            <option key={l.value} value={l.value}>{l.label}</option>
-                                        ))}
-                                    </select>
-                                    <p className="settings-hint">
-                                        The language you'll speak during calls. Must match your spoken language for accurate captions.
-                                    </p>
-                                </div>
-
-                                <div className="settings-field">
-                                    <label className="settings-label" htmlFor="settings-translate-to">
-                                        Translate captions to
-                                    </label>
-                                    <select
-                                        id="settings-translate-to"
-                                        className="settings-select"
-                                        value={translateTo}
-                                        onChange={e => setTranslateTo(e.target.value)}
-                                    >
-                                        {TRANSLATE_LANGUAGES.map(l => (
-                                            <option key={l.value} value={l.value}>{l.label}</option>
-                                        ))}
-                                    </select>
-                                    <p className="settings-hint">
-                                        Captions from other participants will be translated into this language.
-                                        If this matches the speaker's language, no translation is performed.
-                                    </p>
-                                </div>
-
-                                <div className="settings-action-row">
-                                    <button
-                                        id="settings-call-save"
-                                        type="submit"
-                                        className="settings-save-btn"
-                                    >
-                                        💾 Save Preferences
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>
