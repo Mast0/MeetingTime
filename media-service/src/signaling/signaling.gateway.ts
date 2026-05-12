@@ -31,6 +31,8 @@ export class SignalingGateway
         private readonly producerConsumerService: ProducerConsumerService,
     ) { }
 
+    private socketToPeer = new Map<string, { roomId: string, peerId: string }>();
+
     afterInit() {
         console.log(`Server initialized`);
     }
@@ -45,30 +47,30 @@ export class SignalingGateway
     }
 
     private async cleanupPeer(client: Socket) {
-        const rooms = Array.from(client.rooms);
+        const mapping = this.socketToPeer.get(client.id);
+        if (mapping) {
+            const { roomId, peerId } = mapping;
+            this.socketToPeer.delete(client.id);
 
-        for (const roomId of rooms) {
-            if (roomId !== client.id) {
-                const room = this.roomService.getRoom(roomId);
-                if (room) {
-                    const peer = room.peers.get(client.id);
-                    if (peer) {
-                        for (const producer of peer.producers.values()) {
-                            producer.producer.close();
-                        }
-                        for (const consumer of peer.consumers.values()) {
-                            consumer.consumer.close();
-                        }
-                        for (const transport of peer.transports.values()) {
-                            transport.transport.close();
-                        }
-                        room.peers.delete(client.id);
+            const room = this.roomService.getRoom(roomId);
+            if (room) {
+                const peer = room.peers.get(peerId);
+                if (peer) {
+                    for (const producer of peer.producers.values()) {
+                        producer.producer.close();
                     }
-                    client.leave(roomId);
-                    client.to(roomId).emit('peer-left', { peerId: client.id });
-                    if (room.peers.size === 0) {
-                        this.roomService.removeRoom(roomId);
+                    for (const consumer of peer.consumers.values()) {
+                        consumer.consumer.close();
                     }
+                    for (const transport of peer.transports.values()) {
+                        transport.transport.close();
+                    }
+                    room.peers.delete(peerId);
+                }
+                client.leave(roomId);
+                client.to(roomId).emit('peer-left', { peerId });
+                if (room.peers.size === 0) {
+                    this.roomService.removeRoom(roomId);
                 }
             }
         }
@@ -95,6 +97,7 @@ export class SignalingGateway
             }
 
             this.roomService.addPeerToRoom(roomId, peerId, displayName || 'Guest', userId || '');
+            this.socketToPeer.set(client.id, { roomId, peerId });
 
             const sendTransportOptions =
                 await this.transportService.createWebRtcTransport(
