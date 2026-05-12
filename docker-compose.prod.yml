@@ -25,7 +25,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: https://${DOMAIN}/api
-        VITE_WS_API_URL: ${DOMAIN}/ws/chat
+        VITE_WS_API_URL: ${DOMAIN}
         VITE_MEDIA_SERVER_URL: https://${DOMAIN}
     restart: unless-stopped
 
