@@ -6,9 +6,9 @@ import { io, Socket } from "socket.io-client";
 import * as mediasoupClient from "mediasoup-client";
 import type { Consumer, Producer, Transport, TransportOptions } from "mediasoup-client/types";
 import { AuthContext } from "../context/AuthContext";
-import { useUserSettings } from "../context/UserSettingsContext";
 import ParticipantTile from "../components/ParticipantTile";
 import ChatComponent from "../components/ChatComponent";
+import { getRoomById } from '../api/room';
 
 // ─── Types ───
 
@@ -103,23 +103,29 @@ const CallPage: React.FC = () => {
     const [pinnedPeerId, setPinnedPeerId] = useState<string | null>(null);
     const [mobilePage, setMobilePage] = useState<number>(0);
     const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 768);
+    const [roomName, setRoomName] = useState<string>("");
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // Fetch room details on load
+    useEffect(() => {
+        if (roomId) {
+            getRoomById(roomId)
+                .then(data => {
+                    if (data && data.name) {
+                        setRoomName(data.name);
+                    }
+                })
+                .catch(err => console.error("Failed to fetch room details:", err));
+        }
+    }, [roomId]);
     const [reactionBarOpen, setReactionBarOpen] = useState(false);
     const [chatOpen, setChatOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
-
-    // ─── Transcription ───
-    const { settings } = useUserSettings();
-    const [transcriptionOn, setTranscriptionOn] = useState(false);
-    const [captions, setCaptions] = useState<{ peerId: string; displayName: string; text: string; id: number }[]>([]);
-    const [interimCaption, setInterimCaption] = useState<string>(''); // live partial text shown while speaking
-    const captionIdRef = useRef(0);
-    const recognitionRef = useRef<any | null>(null);
 
     // Clear unread count when chat opens
     useEffect(() => {
@@ -284,60 +290,6 @@ const CallPage: React.FC = () => {
                     return next;
                 });
             }, REACTION_LIFETIME_MS);
-        });
-
-        // ─── Transcript relay ───
-        newSocket.on("transcript", ({ peerId, displayName, text, lang }: { peerId: string; displayName: string; text: string; lang: string }) => {
-            // ① Show the caption IMMEDIATELY with the original text — no blocking fetch
-            const captionId = ++captionIdRef.current;
-            setCaptions(prev => [...prev, { peerId, displayName, text, id: captionId }]);
-            const dismissTimer = setTimeout(() => {
-                setCaptions(prev => prev.filter(c => c.id !== captionId));
-            }, 6000);
-
-            // ② Attempt translation in the background and patch the caption when ready
-            const { settings: currentSettings } = (() => {
-                try {
-                    const raw = localStorage.getItem('meetingtime_user_settings');
-                    if (raw) return { settings: JSON.parse(raw) };
-                } catch { /* ignore */ }
-                return { settings: { speechLang: 'en-US', translateTo: '' } };
-            })();
-
-            const targetLang = currentSettings.translateTo ?? '';
-            const sourcePrimary = (lang ?? 'en').split('-')[0].toLowerCase();
-            const targetPrimary = targetLang.toLowerCase();
-
-            console.log(targetLang);
-            console.log(sourcePrimary);
-            console.log(targetPrimary);
-            if (targetLang && sourcePrimary !== targetPrimary) {
-                const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourcePrimary}|${targetPrimary}`;
-                fetch(url)
-                    .then(res => res.json())
-                    .then(data => {
-                        // MyMemory returns responseStatus 200 on success.
-                        // Ignore error messages like "MYMEMORY WARNING: YOU USED ALL AVAILABLE..."
-                        const translated: string | undefined = data?.responseData?.translatedText;
-                        if (
-                            data?.responseStatus === 200 &&
-                            translated &&
-                            !translated.toUpperCase().startsWith('MYMEMORY')
-                        ) {
-                            console.log(translated)
-                            // Patch the existing caption in-place with the translated text
-                            setCaptions(prev =>
-                                prev.map(c => c.id === captionId ? { ...c, text: translated } : c)
-                            );
-                            // Reset dismiss timer so the translated version stays visible
-                            clearTimeout(dismissTimer);
-                            setTimeout(() => {
-                                setCaptions(prev => prev.filter(c => c.id !== captionId));
-                            }, 5000);
-                        }
-                    })
-                    .catch((e) => { console.error(e) });
-            }
         });
 
         return () => {
@@ -825,101 +777,6 @@ const CallPage: React.FC = () => {
         setInviteToast(true);
         setTimeout(() => setInviteToast(false), 2500);
     };
-
-    // ─── Transcription toggle ───
-    const toggleTranscription = useCallback(() => {
-        if (transcriptionOn) {
-            recognitionRef.current?.stop();
-            recognitionRef.current = null;
-            setTranscriptionOn(false);
-            setInterimCaption('');
-            return;
-        }
-
-        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            alert('Speech Recognition is not supported in this browser. Please use Chrome or Edge.');
-            return;
-        }
-
-        const recognition = new SpeechRecognition() as any;
-        recognition.continuous = true;
-        recognition.interimResults = true;  // ← stream words immediately
-        recognition.lang = settings.speechLang;
-
-        recognition.onresult = (event: any) => {
-            const sock = socketRef.current;
-            if (!sock || !roomId) return;
-
-            let interim = '';
-
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const transcript = event.results[i][0].transcript;
-
-                if (event.results[i].isFinal) {
-                    const text = transcript.trim();
-                    if (!text) continue;
-
-                    // Clear the live interim preview
-                    setInterimCaption('');
-
-                    // Commit to captions list locally
-                    const localId = ++captionIdRef.current;
-                    setCaptions(prev => [...prev, {
-                        peerId: sock.id ?? 'local',
-                        displayName: userName || 'You',
-                        text,
-                        id: localId,
-                    }]);
-                    setTimeout(() => {
-                        setCaptions(prev => prev.filter(c => c.id !== localId));
-                    }, 5000);
-
-                    // Broadcast the final sentence to others
-                    console.log('[CC] emitting transcript to room:', roomId, '| text:', text, '| lang:', settings.speechLang);
-                    sock.emit('transcript', {
-                        roomId,
-                        peerId: sock.id,
-                        displayName: userName || 'You',
-                        text,
-                        lang: settings.speechLang,
-                    });
-                } else {
-                    // Accumulate interim words for the live preview
-                    interim += transcript;
-                }
-            }
-
-            // Update the live typing preview
-            if (interim) setInterimCaption(interim);
-        };
-
-        recognition.onerror = (e: any) => {
-            console.error('SpeechRecognition error:', e.error);
-        };
-
-        recognition.onend = () => {
-            // Auto-restart if still enabled (handles browser stopping after silence)
-            if (recognitionRef.current) {
-                recognitionRef.current.start();
-            }
-        };
-
-        recognition.start();
-        recognitionRef.current = recognition;
-        setTranscriptionOn(true);
-    }, [transcriptionOn, roomId, userName, settings.speechLang]);
-
-    // Stop recognition on unmount
-    useEffect(() => {
-        return () => {
-            recognitionRef.current?.stop();
-            recognitionRef.current = null;
-        };
-    }, []);
-
-    // ─── Render ───
-
     // ─── Render Logic ───
 
     // Combine local user + remote peers into one array for easier pagination/pinning logic
@@ -976,7 +833,7 @@ const CallPage: React.FC = () => {
             {/* Header */}
             <div className="call-header p-3 d-flex justify-content-between align-items-center">
                 <h5 className="mb-0" style={{ color: '#4ade80' }}>
-                    {joined ? `Room: ${roomId}` : 'Join a Room'}
+                    {joined ? (roomName || `Room: ${roomId}`) : 'Join a Room'}
                 </h5>
                 <div className="d-flex align-items-center gap-2">
                     {joined && (
@@ -1091,30 +948,9 @@ const CallPage: React.FC = () => {
                     )}
                 </div>
                 <div className="call-chat-sidebar" style={{ width: '350px', borderLeft: '1px solid var(--color-border)', display: chatOpen ? 'flex' : 'none', flexDirection: 'column', height: '100%' }}>
-                    <ChatComponent roomId={roomId} roomName={`Room ${roomId}`} hideCallButton={true} onNewMessage={handleNewMessage} />
+                    <ChatComponent roomId={roomId} roomName={roomName || `Room ${roomId}`} hideCallButton={true} onNewMessage={handleNewMessage} />
                 </div>
             </div>
-
-            {/* Captions overlay — shown whenever transcription is on and there's something to display */}
-            {transcriptionOn && (captions.length > 0 || interimCaption) && (
-                <div className="captions-panel" aria-live="polite" aria-label="Live captions">
-                    {/* Committed captions (last 3) */}
-                    {captions.slice(-3).map(c => (
-                        <div key={c.id} className="caption-line">
-                            <span className="caption-speaker">{c.displayName}:</span>
-                            <span className="caption-text">{c.text}</span>
-                        </div>
-                    ))}
-                    {/* Live interim preview — updates word-by-word as you speak */}
-                    {interimCaption && (
-                        <div className="caption-line caption-line--interim">
-                            <span className="caption-speaker">{userName || 'You'}:</span>
-                            <span className="caption-text caption-text--interim">{interimCaption}</span>
-                        </div>
-                    )}
-                </div>
-            )}
-
 
             {/* Controls */}
             {joined && (
@@ -1191,18 +1027,6 @@ const CallPage: React.FC = () => {
                                 ))}
                             </div>
                         )}
-                    </div>
-
-                    <div className="ctrl-wrapper">
-                        <button
-                            id="transcription-toggle-btn"
-                            className={`ctrl-btn ${transcriptionOn ? 'on' : 'off'}`}
-                            onClick={toggleTranscription}
-                            title={transcriptionOn ? 'Stop captions' : 'Enable live captions'}
-                        >
-                            CC
-                        </button>
-                        <span className="ctrl-label">{transcriptionOn ? 'CC On' : 'Captions'}</span>
                     </div>
 
                     <div className="ctrl-wrapper">
