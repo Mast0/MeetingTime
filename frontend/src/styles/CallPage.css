@@ -58,6 +58,25 @@
     border-radius: 10px;
 }
 
+/* Ensure a pinned participant tile fills the entire screen-share container */
+.screen-share-tile .participant-tile {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto; /* Remove strict aspect ratio to fill container */
+    border: none; /* Container already has a border */
+    border-radius: 10px;
+}
+
+/* Make avatar larger when pinned */
+.screen-share-tile .participant-tile .tile-avatar {
+    width: 160px;
+    height: 160px;
+}
+
+.screen-share-tile .participant-tile .tile-avatar-letter {
+    font-size: 64px;
+}
+
 /* ─── Participant Grid ─── */
 .participants-grid {
     display: grid;
