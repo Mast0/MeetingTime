@@ -5,8 +5,17 @@ export const getRooms = async () => {
     return response.data;
 };
 
-export const getRoomById = async (roomId: string) => {
-    const response = await apiClient.get('/room/get-room', { params: { roomId } });
+export const getRoomById = async (roomId: string, token?: string) => {
+    const config: any = { params: { roomId } };
+    if (token) {
+        config.headers = { Authorization: `Bearer ${token}` };
+    }
+    const response = await apiClient.get('/room/get-room', config);
+    return response.data;
+};
+
+export const getRoomBasicInfo = async (roomId: string) => {
+    const response = await apiClient.get(`/room/public/${roomId}/basic-info`);
     return response.data;
 };
 

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Protos;
 using System.Security.Claims;
+using Grpc.Core;
 
 namespace ApiGateway.Controllers;
 
@@ -35,6 +36,21 @@ public class RoomController : ControllerBase
         var res = await _roomClient.GetRoomAsync(req);
         return Ok(res);
     }
+
+    [HttpGet("public/{roomId}/basic-info")]
+    public async Task<IActionResult> GetRoomBasicInfo(string roomId)
+    {
+        try
+        {
+            var res = await _roomClient.GetRoomAsync(new GetRoomRequest { RoomId = roomId });
+            return Ok(new { name = res.Name });
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+        {
+            return NotFound();
+        }
+    }
+
 
     [Authorize]
     [HttpGet]

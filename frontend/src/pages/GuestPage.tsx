@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { guestLogin } from '../api/auth';
+import { getRoomBasicInfo } from '../api/room';
 import CallPage from './CallPage';
 import { AuthContext } from '../context/AuthContext';
 
@@ -12,6 +13,19 @@ export const GuestPage: React.FC = () => {
     const [userId, setUserId] = useState<string | null>(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [roomName, setRoomName] = useState('');
+
+    useEffect(() => {
+        if (roomId) {
+            getRoomBasicInfo(roomId)
+                .then(data => {
+                    if (data && data.name) {
+                        setRoomName(data.name);
+                    }
+                })
+                .catch(() => { /* ignore */ });
+        }
+    }, [roomId]);
 
     const handleJoin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -57,7 +71,9 @@ export const GuestPage: React.FC = () => {
     return (
         <div className="d-flex align-items-center justify-content-center vh-100 bg-dark text-light">
             <div className="card bg-secondary text-light p-4" style={{ maxWidth: '400px', width: '100%' }}>
-                <h3 className="text-center mb-4" style={{ color: '#4ade80' }}>Join Meeting as Guest</h3>
+                <h3 className="text-center mb-4" style={{ color: '#4ade80' }}>
+                    Join {roomName ? `Room: ${roomName}` : 'Meeting'} as Guest
+                </h3>
                 {error && <div className="alert alert-danger">{error}</div>}
                 <form onSubmit={handleJoin}>
                     <div className="mb-3">
