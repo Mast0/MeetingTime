@@ -77,7 +77,7 @@ function createSpeakingDetector(
 const CallPage: React.FC = () => {
     const { roomId: urlRoomId } = useParams<{ roomId: string }>();
     const navigate = useNavigate();
-    const { userName, userId } = useContext(AuthContext);
+    const { token, userName, userId } = useContext(AuthContext);
 
     // ─── State ───
     const [socket, setSocket] = useState<Socket | null>(null);
@@ -114,7 +114,7 @@ const CallPage: React.FC = () => {
     // Fetch room details on load
     useEffect(() => {
         if (roomId) {
-            getRoomById(roomId)
+            getRoomById(roomId, token ?? undefined)
                 .then(data => {
                     if (data && data.name) {
                         setRoomName(data.name);
@@ -122,7 +122,7 @@ const CallPage: React.FC = () => {
                 })
                 .catch(err => console.error("Failed to fetch room details:", err));
         }
-    }, [roomId]);
+    }, [roomId, token]);
     const [reactionBarOpen, setReactionBarOpen] = useState(false);
     const [chatOpen, setChatOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
