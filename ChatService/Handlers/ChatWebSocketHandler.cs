@@ -93,7 +93,7 @@ public static class ChatWebSocketHandler
                 var chatMsg = chat.ToChatMsg();
 
                 // Persist encrypted message, invalidate cache, then publish plaintext via Redis
-                await PersistAsync(chatMsg, repo, encryption);
+                await PersistAsync(chatMsg, ctx.RequestServices, encryption);
                 await pubSub.PublishAsync(roomId, chatMsg);
             }
 
@@ -129,22 +129,34 @@ public static class ChatWebSocketHandler
 
     /// <summary>
     /// Persists a real chat message with encrypted text to the database.
+    /// Uses a separate scope so DbContext failures (e.g. guest foreign key violations)
+    /// don't corrupt the long-running WebSocket scope or crash the connection.
     /// </summary>
     private static async Task PersistAsync(
         ChatMessagePayload msg,
-        IChatMessageRepository repo,
+        IServiceProvider services,
         IAesEncryptionService encryption)
     {
-        var encryptedText = encryption.Encrypt(msg.Text);
-
-        await repo.AddAsync(new ChatMessageEntity
+        try
         {
-            Id        = Guid.NewGuid(),
-            RoomId    = Guid.Parse(msg.RoomId),
-            UserId    = msg.UserId,
-            Text      = encryptedText,
-            Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(msg.Timestamp),
-        });
+            var encryptedText = encryption.Encrypt(msg.Text);
+
+            using var scope = services.CreateScope();
+            var repo = scope.ServiceProvider.GetRequiredService<IChatMessageRepository>();
+
+            await repo.AddAsync(new ChatMessageEntity
+            {
+                Id        = Guid.NewGuid(),
+                RoomId    = Guid.Parse(msg.RoomId),
+                UserId    = msg.UserId,
+                Text      = encryptedText,
+                Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(msg.Timestamp),
+            });
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Warning(ex, "Failed to persist chat message (UserId: {UserId}). This is expected for guest users.", msg.UserId);
+        }
     }
 
     /// <summary>
