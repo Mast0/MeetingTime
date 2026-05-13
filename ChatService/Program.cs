@@ -3,6 +3,7 @@ using ChatService.Repositories;
 using ChatService.Services;
 using MeetingTime.Domain.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Protos;
 using Shared.Domain.Entities;
 using Shared.Domain.Interfaces;
@@ -40,6 +41,20 @@ builder.Services.AddGrpcClient<Auth.AuthClient>(o =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<MeetingTimeContext>();
+        await db.Database.MigrateAsync();
+        Log.Information("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "An error occurred while migrating the database.");
+    }
+}
 
 app.UseWebSockets();
 

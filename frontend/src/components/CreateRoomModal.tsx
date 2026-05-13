@@ -2,31 +2,24 @@ import React, { useState } from "react";
 import { Modal } from "bootstrap";
 
 interface Props {
-  onCreate: (name: string, maxParticipiants: number, password: string) => void;
+  onCreate: (name: string, password: string) => void;
 }
 
 const CreateRoomModal: React.FC<Props> = ({ onCreate }) => {
   const [name, setName] = useState('');
-  const [maxParticipiants, setMaxParticipiants] = useState(1);
   const [password, setPassword] = useState('');
 
   const handleSubmit = () => {
     if (!name.trim()) return;
 
-    onCreate(name, maxParticipiants, password);
+    onCreate(name, password);
     setName('');
-    setMaxParticipiants(1);
     setPassword('');
     const modalEl = document.getElementById("createRoomModal");
     if (modalEl) {
       const modal = Modal.getInstance(modalEl);
       modal?.hide();
     }
-  };
-
-  const handleParticipantsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value, 10);
-    setMaxParticipiants(isNaN(value) || value < 1 ? 1 : value);
   };
 
   return (
@@ -60,23 +53,12 @@ const CreateRoomModal: React.FC<Props> = ({ onCreate }) => {
                 placeholder="e.g. Team Standup"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', color: '#94a3b8', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Max Participants
-              </label>
-              <input
-                className="form-control"
-                type="number"
-                min={1}
-                value={maxParticipiants}
-                onChange={handleParticipantsChange}
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
               />
             </div>
             <div>
               <label style={{ display: 'block', color: '#94a3b8', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Password (optional)
+                Password <span style={{ color: '#64748b', fontWeight: 400, textTransform: 'none' }}>(optional — leave empty for public room)</span>
               </label>
               <input
                 className="form-control"
@@ -84,6 +66,7 @@ const CreateRoomModal: React.FC<Props> = ({ onCreate }) => {
                 placeholder="Leave empty for public room"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
               />
             </div>
           </div>

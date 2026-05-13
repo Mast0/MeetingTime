@@ -24,9 +24,14 @@ export const getMyRooms = async () => {
     return response.data;
 };
 
-export const createRoom = async (data: { name: string; maxParticipiants: number; password: string }) => {
+export const createRoom = async (data: { name: string; password: string }) => {
     const response = await apiClient.post('/room/', data);
     return response.data;
+};
+
+export const checkRoomPassword = async (roomId: string, password: string) => {
+    const response = await apiClient.post(`/room/${roomId}/check-password`, { password });
+    return response.data as { valid: boolean };
 };
 
 export const addRoomMember = async (roomId: string, userId: string) => {

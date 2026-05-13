@@ -13,7 +13,6 @@ import SearchRoomsModal from '../components/SearchRoomsModal';
 interface Room {
     roomId: string;
     name: string;
-    maxParticipiants?: number;
 }
 
 const Main: React.FC = () => {
@@ -104,9 +103,9 @@ const Main: React.FC = () => {
         };
     }, []);
 
-    const handleCreate = useCallback(async (name: string, maxParticipiants: number, password: string) => {
+    const handleCreate = useCallback(async (name: string, password: string) => {
         try {
-            const newRoom = await createRoom({ name, maxParticipiants, password });
+            const newRoom = await createRoom({ name, password });
             setRooms(prev => [...prev, newRoom]);
         } catch (err) {
             console.error("Failed to create room:", err);
