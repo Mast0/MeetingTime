@@ -1,6 +1,7 @@
 using AuthService.Repositories;
 using MeetingTime.Domain.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using RoomService.Services;
 using Shared.Domain.Entities;
 using Shared.Domain.Interfaces;
@@ -30,6 +31,20 @@ builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddGrpc();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<MeetingTimeContext>();
+        await db.Database.MigrateAsync();
+        Log.Information("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "An error occurred while migrating the database.");
+    }
+}
 
 app.MapGrpcService<RoomGrpcService>();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");

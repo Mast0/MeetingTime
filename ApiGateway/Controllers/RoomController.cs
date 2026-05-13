@@ -51,6 +51,24 @@ public class RoomController : ControllerBase
         }
     }
 
+    [Authorize]
+    [HttpPost("{roomId}/check-password")]
+    public async Task<IActionResult> CheckPassword(string roomId, [FromBody] CheckPasswordRequest body)
+    {
+        try
+        {
+            var res = await _roomClient.CheckRoomPasswordAsync(new CheckRoomPasswordRequest
+            {
+                RoomId   = roomId,
+                Password = body.Password
+            });
+            return Ok(new { valid = res.Valid });
+        }
+        catch (RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.NotFound)
+        {
+            return NotFound();
+        }
+    }
 
     [Authorize]
     [HttpGet]
@@ -133,8 +151,14 @@ public class RoomController : ControllerBase
     }
 }
 
-// Simple DTO for the add-member request body
+// ─── DTOs ───
+
 public class AddMemberRequest
 {
     public string UserId { get; set; } = "";
+}
+
+public class CheckPasswordRequest
+{
+    public string Password { get; set; } = "";
 }

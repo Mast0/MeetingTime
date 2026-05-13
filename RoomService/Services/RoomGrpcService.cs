@@ -1,3 +1,4 @@
+using BC = BCrypt.Net.BCrypt;
 using Grpc.Core;
 using MeetingTime.Domain.Entities;
 using Protos;
@@ -26,10 +27,11 @@ public class RoomGrpcService : Room.RoomBase
     {
         var room = new RoomEntity
         {
-            Id               = Guid.NewGuid(),
-            Name             = request.Name,
-            MaxParticipiants = request.MaxParticipiants,
-            Password         = request.Password,
+            Id       = Guid.NewGuid(),
+            Name     = request.Name,
+            Password = string.IsNullOrEmpty(request.Password)
+                           ? ""
+                           : BC.HashPassword(request.Password),
         };
 
         var roomResponse = await _repo.AddAsync(room);
@@ -53,7 +55,6 @@ public class RoomGrpcService : Room.RoomBase
 
         if (cached.HasValue)
         {
-            // Cached as CachedRoom DTO — plain POCO that STJ can round-trip
             var dto = JsonSerializer.Deserialize<CachedRoom>(cached!, JsonOpt);
             if (dto != null) return DtoToResponse(dto);
         }
@@ -82,9 +83,14 @@ public class RoomGrpcService : Room.RoomBase
         var room = await _repo.GetByIdAsync(guid);
         if (room == null) return new RoomResponse();
 
-        room.Name            = request.Name;
-        room.MaxParticipiants = request.MaxParticipiants;
-        room.Password        = request.Password;
+        room.Name = request.Name;
+
+        // Only re-hash if a new password was explicitly provided
+        if (!string.IsNullOrEmpty(request.Password))
+            room.Password = BC.HashPassword(request.Password);
+        else
+            room.Password = "";
+
         await _repo.UpdateAsync(room);
 
         await _redis.KeyDeleteAsync(RoomKey(request.RoomId));
@@ -99,6 +105,23 @@ public class RoomGrpcService : Room.RoomBase
             await _redis.KeyDeleteAsync(RoomKey(request.RoomId));
         }
         return new Empty();
+    }
+
+    public override async Task<CheckRoomPasswordResponse> CheckRoomPassword(CheckRoomPasswordRequest request, ServerCallContext context)
+    {
+        if (!Guid.TryParse(request.RoomId, out var guid))
+            return new CheckRoomPasswordResponse { Valid = false };
+
+        var room = await _repo.GetByIdAsync(guid);
+        if (room == null)
+            return new CheckRoomPasswordResponse { Valid = false };
+
+        // Room has no password — always valid (shouldn't be called, but guard anyway)
+        if (string.IsNullOrEmpty(room.Password))
+            return new CheckRoomPasswordResponse { Valid = true };
+
+        var valid = BC.Verify(request.Password, room.Password);
+        return new CheckRoomPasswordResponse { Valid = valid };
     }
 
     // ─── Membership RPCs ───
@@ -156,7 +179,6 @@ public class RoomGrpcService : Room.RoomBase
 
         if (cached.HasValue)
         {
-            // Deserialize List<CachedRoom> — plain POCO, STJ handles it perfectly
             var dtos = JsonSerializer.Deserialize<List<CachedRoom>>(cached!, JsonOpt);
             if (dtos != null)
             {
@@ -170,7 +192,6 @@ public class RoomGrpcService : Room.RoomBase
         var response = new RoomsResponse();
         response.Rooms.AddRange(rooms.Select(ToResponse));
 
-        // Cache as List<CachedRoom>, not as protobuf RoomsResponse
         var cachedDtos = rooms.Select(ToCachedRoom).ToList();
         await _redis.StringSetAsync(cacheKey, JsonSerializer.Serialize(cachedDtos, JsonOpt), UserRoomsTtl);
 
@@ -185,10 +206,9 @@ public class RoomGrpcService : Room.RoomBase
         var response = new RoomsResponse();
         response.Rooms.AddRange(rooms.Select(r => new RoomResponse
         {
-            RoomId           = r.Id.ToString(),
-            Name             = r.Name,
-            MaxParticipiants = r.MaxParticipiants,
-            Password         = r.Password ?? ""
+            RoomId      = r.Id.ToString(),
+            Name        = r.Name,
+            HasPassword = !string.IsNullOrEmpty(r.Password)
         }));
 
         return response;
@@ -198,32 +218,27 @@ public class RoomGrpcService : Room.RoomBase
 
     private static RoomResponse ToResponse(RoomEntity r) => new()
     {
-        RoomId           = r.Id.ToString(),
-        Name             = r.Name,
-        MaxParticipiants = r.MaxParticipiants,
-        Password         = r.Password ?? ""
+        RoomId      = r.Id.ToString(),
+        Name        = r.Name,
+        HasPassword = !string.IsNullOrEmpty(r.Password)
     };
 
     /// <summary>
     /// Plain POCO used for Redis caching.
-    /// Protobuf RepeatedField collections have no setter, so System.Text.Json cannot
-    /// populate them during deserialization — caching raw proto objects produces empty results.
     /// </summary>
     private sealed record CachedRoom(
         string RoomId,
         string Name,
-        int    MaxParticipiants,
-        string Password);
+        bool   HasPassword);
 
     private static CachedRoom ToCachedRoom(RoomEntity r) =>
-        new(r.Id.ToString(), r.Name, r.MaxParticipiants, r.Password ?? "");
+        new(r.Id.ToString(), r.Name, !string.IsNullOrEmpty(r.Password));
 
     private static RoomResponse DtoToResponse(CachedRoom dto) => new()
     {
-        RoomId           = dto.RoomId,
-        Name             = dto.Name,
-        MaxParticipiants = dto.MaxParticipiants,
-        Password         = dto.Password
+        RoomId      = dto.RoomId,
+        Name        = dto.Name,
+        HasPassword = dto.HasPassword
     };
 
     private static string RoomKey(string roomId)      => $"room:{roomId}";

@@ -73,7 +73,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = servicesScope.GetRequiredService<MeetingTime.Domain.Data.MeetingTimeContext>();
-        context.Database.EnsureCreated();
+        await context.Database.MigrateAsync();
         Log.Information("Database migrations applied successfully.");
     }
     catch (Exception ex)

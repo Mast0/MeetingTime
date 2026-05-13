@@ -11,6 +11,9 @@ service Room {
 	rpc UpdateRoom (UpdateRoomRequest) returns (RoomResponse);
 	rpc DeleteRoom (DeleteRoomRequest) returns (Empty);
 
+	// Password
+	rpc CheckRoomPassword (CheckRoomPasswordRequest) returns (CheckRoomPasswordResponse);
+
 	// Membership
 	rpc AddRoomMember (AddRoomMemberRequest) returns (RoomMemberResponse);
 	rpc RemoveRoomMember (RemoveRoomMemberRequest) returns (Empty);
@@ -27,9 +30,8 @@ message SearchPublicRoomsRequest {
 
 message CreateRoomRequest {
 	string name = 1;
-	int32 maxParticipiants = 2;
-	string password = 3;
-	string creatorUserId = 4;
+	string password = 2;
+	string creatorUserId = 3;
 }
 
 message GetRoomRequest {
@@ -39,19 +41,26 @@ message GetRoomRequest {
 message UpdateRoomRequest {
 	string roomId = 1;
 	string name = 2;
-	int32 maxParticipiants = 3;
-	string password = 4;
+	string password = 3;
 }
 
 message DeleteRoomRequest {
 	string roomId = 1;
 }
 
+message CheckRoomPasswordRequest {
+	string roomId = 1;
+	string password = 2;
+}
+
+message CheckRoomPasswordResponse {
+	bool valid = 1;
+}
+
 message RoomResponse {
 	string roomId = 1;
 	string name = 2;
-	int32 maxParticipiants = 3;
-	string password = 4;
+	bool hasPassword = 3;
 }
 
 message RoomsResponse {
