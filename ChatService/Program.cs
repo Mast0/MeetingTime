@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Protos;
 using Shared.Domain.Entities;
 using Shared.Domain.Interfaces;
+using Shared.Infrastructure;
 using Shared.Infrastructure.Extensions;
 using Shared.Infrastructure.Logging;
 using Serilog;
@@ -42,25 +43,17 @@ builder.Services.AddGrpcClient<Auth.AuthClient>(o =>
 
 var app = builder.Build();
 
-for (var attempt = 1; attempt <= 5; attempt++)
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<MeetingTimeContext>();
     try
     {
-        var db = scope.ServiceProvider.GetRequiredService<MeetingTimeContext>();
-        await db.Database.MigrateAsync();
+        await MigrationHelper.SyncAndMigrateAsync(db);
         Log.Information("Database migrations applied successfully.");
-        break;
-    }
-    catch (Exception ex) when (attempt < 5 && ex.ToString().Contains("42P07"))
-    {
-        Log.Warning("Migration race condition detected (attempt {Attempt}/5), retrying in {Delay}ms...", attempt, attempt * 1000);
-        await Task.Delay(attempt * 1000);
     }
     catch (Exception ex)
     {
         Log.Error(ex, "An error occurred while migrating the database.");
-        break;
     }
 }
 

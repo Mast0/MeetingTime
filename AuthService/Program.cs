@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Shared.Infrastructure;
 using Shared.Infrastructure.Extensions;
 using MeetingTime.Domain.Data;
 using Shared.Domain.Entities;
@@ -67,25 +68,17 @@ var app = builder.Build();
 app.MapGrpcService<AuthGrpcService>();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
-for (var attempt = 1; attempt <= 5; attempt++)
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<MeetingTimeContext>();
     try
     {
-        var context = scope.ServiceProvider.GetRequiredService<MeetingTimeContext>();
-        await context.Database.MigrateAsync();
+        await MigrationHelper.SyncAndMigrateAsync(context);
         Log.Information("Database migrations applied successfully.");
-        break;
-    }
-    catch (Exception ex) when (attempt < 5 && ex.ToString().Contains("42P07"))
-    {
-        Log.Warning("Migration race condition detected (attempt {Attempt}/5), retrying in {Delay}ms...", attempt, attempt * 1000);
-        await Task.Delay(attempt * 1000);
     }
     catch (Exception ex)
     {
         Log.Error(ex, "An error occurred while migrating the database.");
-        break;
     }
 }
 
