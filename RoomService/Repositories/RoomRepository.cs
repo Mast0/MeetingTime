@@ -106,7 +106,6 @@ public class RoomRepository : IRoomRepository
     public async Task<IEnumerable<RoomEntity>> SearchPublicRoomsAsync(string query)
     {
         var publicRooms = await _context.Rooms
-            .Where(r => string.IsNullOrEmpty(r.Password.Trim()))
             .ToListAsync();
 
         if (string.IsNullOrWhiteSpace(query))
