@@ -67,18 +67,25 @@ var app = builder.Build();
 app.MapGrpcService<AuthGrpcService>();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
-using (var scope = app.Services.CreateScope())
+for (var attempt = 1; attempt <= 5; attempt++)
 {
-    var servicesScope = scope.ServiceProvider;
+    using var scope = app.Services.CreateScope();
     try
     {
-        var context = servicesScope.GetRequiredService<MeetingTime.Domain.Data.MeetingTimeContext>();
+        var context = scope.ServiceProvider.GetRequiredService<MeetingTimeContext>();
         await context.Database.MigrateAsync();
         Log.Information("Database migrations applied successfully.");
+        break;
+    }
+    catch (Exception ex) when (attempt < 5 && ex.ToString().Contains("42P07"))
+    {
+        Log.Warning("Migration race condition detected (attempt {Attempt}/5), retrying in {Delay}ms...", attempt, attempt * 1000);
+        await Task.Delay(attempt * 1000);
     }
     catch (Exception ex)
     {
         Log.Error(ex, "An error occurred while migrating the database.");
+        break;
     }
 }
 

@@ -32,17 +32,25 @@ builder.Services.AddGrpc();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+for (var attempt = 1; attempt <= 5; attempt++)
 {
+    using var scope = app.Services.CreateScope();
     try
     {
         var db = scope.ServiceProvider.GetRequiredService<MeetingTimeContext>();
         await db.Database.MigrateAsync();
         Log.Information("Database migrations applied successfully.");
+        break;
+    }
+    catch (Exception ex) when (attempt < 5 && ex.ToString().Contains("42P07"))
+    {
+        Log.Warning("Migration race condition detected (attempt {Attempt}/5), retrying in {Delay}ms...", attempt, attempt * 1000);
+        await Task.Delay(attempt * 1000);
     }
     catch (Exception ex)
     {
         Log.Error(ex, "An error occurred while migrating the database.");
+        break;
     }
 }
 
